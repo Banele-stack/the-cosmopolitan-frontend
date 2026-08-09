@@ -2,6 +2,8 @@ import "./globals.css";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 import Script from "next/script";
+import { Toaster } from "sonner";
+import HelpWidget from "@/components/common/HelpWidget";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -38,6 +40,8 @@ export default function RootLayout({
 
       <body className="bg-white text-black antialiased">
         {children}
+         <Toaster richColors position="top-right" />
+         <HelpWidget />
       </body>
     </html>
   );

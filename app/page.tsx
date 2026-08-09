@@ -1,157 +1,414 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Footer from "./components/footer/Footer";
-import Hero from "./components/hero/Hero";
-import FeaturedListings from "./components/listings/FeaturedListings";
-import Navbar from "./components/navbar/Navbar";
-import BusinessCard from "./components/BusinessCard";
-import { Business, getBusinesses } from "./services/business.service";
-import MobileTabs from "./components/navigation/MobileTabs";
-import { CalendarDays } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import Footer from "@/components/layout/Footer";
+import Hero from "@/features/home/components/Hero";
+import FeaturedListings from "@/features/home/components/FeaturedListings";
+import Navbar from "@/components/layout/Navbar";
+import BusinessCard from "@/features/business/components/BusinessCard";
+import GigCard from "@/features/gigs/components/GigCard";
+import MobileTabs from "@/components/layout/MobileTabs";
+import {
+  Business,
+  getBusinesses,
+} from "@/features/business/services/business.service";
+import { Gig } from "@/features/gigs/types";
+import { getGigs } from "@/features/gigs/services/gig.service";
+import AskAIPanel from "@/features/ai/components/AskAIPanel";
+import OnboardingTour from "@/features/home/components/OnboardingTour";
+import SafetyTipsModal from "@/features/home/components/SafetyTipsModal";
+import Pagination from "@/components/ui/Pagination";
+import { NearbyMeta, PaginationMeta } from "@/types/pagination";
 
-type ViewMode = "rooms" | "businesses" | "events";
+import { useBusinessSearchStore } from "@/features/business/store/business-search.store";
+import { useGigSearchStore } from "@/features/gigs/store/gig-search.store";
+import { useAutoDetectLocation } from "@/lib/hooks/useAutoDetectLocation";
+import { formatNearbyLabel } from "@/lib/format-nearby-label";
 
-type Event = {
-  id: string;
-  title: string;
-  date: string;
-  location: string;
-  description: string;
-};
+type ViewMode = "rooms" | "businesses" | "gigs" | "askAi";
+
+const BUSINESSES_PAGE_LIMIT = 10;
+const GIGS_PAGE_LIMIT = 12;
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
   const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [businessesPagination, setBusinessesPagination] =
+    useState<PaginationMeta | null>(null);
+  const [businessesPage, setBusinessesPage] = useState(1);
+  const [businessesNearby, setBusinessesNearby] =
+    useState<NearbyMeta | null>(null);
+  const [gigs, setGigs] = useState<Gig[]>([]);
+  const [gigsPagination, setGigsPagination] = useState<PaginationMeta | null>(
+    null
+  );
+  const [gigsPage, setGigsPage] = useState(1);
+  const [gigsNearby, setGigsNearby] = useState<NearbyMeta | null>(null);
   const [view, setView] = useState<ViewMode>("rooms");
+  const [tourActive, setTourActive] = useState(false);
+  const [showSafetyTips, setShowSafetyTips] = useState(false);
+  const tourWasActive = useRef(false);
+  const router = useRouter();
 
-  // mock events (you can later replace with API)
-  const [events] = useState<Event[]>([
-    {
-      id: "1",
-      title: "Cosmo City Street Market",
-      date: "Saturday 10:00 AM",
-      location: "Cosmo City Shopping Centre",
-      description: "Food, music, and local vendors.",
-    },
-    {
-      id: "2",
-      title: "Weekend Soccer Tournament",
-      date: "Sunday 09:00 AM",
-      location: "Cosmo City Sports Ground",
-      description: "Community football matches and prizes.",
-    },
-    {
-      id: "3",
-      title: "Youth Coding Meetup",
-      date: "Friday 17:00 PM",
-      location: "Community Library",
-      description: "Learn React, AI, and software basics.",
-    },
+  // Fires once, right as the onboarding tour finishes (either "Got it" or
+  // "Skip") — not on mount, where tourActive also starts false but the
+  // tour was never actually shown (e.g. a returning visitor).
+  const handleTourActiveChange = (isActive: boolean) => {
+    setTourActive(isActive);
+    if (isActive) {
+      tourWasActive.current = true;
+    } else if (tourWasActive.current) {
+      tourWasActive.current = false;
+      setShowSafetyTips(true);
+    }
+  };
+
+  const detectedArea = useAutoDetectLocation();
+
+ const {
+  location,
+  lat,
+  lng,
+  categorySlug,
+  subcategorySlug,
+  search,
+  openNow,
+  deliveryAvailable,
+  onlineOnly,
+  nearby,
+  highlyRated,
+  priceRange,
+  searchTrigger,
+} = useBusinessSearchStore();
+
+const {
+  location: gigLocation,
+  lat: gigLat,
+  lng: gigLng,
+  type: gigType,
+  categorySlug: gigCategorySlug,
+  subcategorySlug: gigSubcategorySlug,
+  urgency: gigUrgency,
+  searchTrigger: gigSearchTrigger,
+} = useGigSearchStore();
+
+useEffect(() => {
+  const requestedView = new URLSearchParams(
+    window.location.search
+  ).get("view");
+
+  if (
+    requestedView === "rooms" ||
+    requestedView === "businesses" ||
+    requestedView === "gigs" ||
+    requestedView === "askAi"
+  ) {
+    setView(requestedView);
+  }
+}, []);
+
+// Keeps the URL's ?view= in sync with the current tab, so a refresh lands
+// back on the same tab instead of resetting to Properties (the effect
+// above is what reads it back on the next load). Skips its very first run
+// — without that guard it would fire during the initial render (view is
+// still the "rooms" default then, since the URL-reading effect above
+// hasn't applied its setView yet) and briefly stomp a real ?view= from the
+// address bar back to "rooms" before self-correcting a moment later.
+const skippedInitialUrlSync = useRef(false);
+useEffect(() => {
+  if (!skippedInitialUrlSync.current) {
+    skippedInitialUrlSync.current = true;
+    return;
+  }
+  router.replace(`/?view=${view}`, { scroll: false });
+}, [view, router]);
+
+// Switching tabs should always land at the top of the new tab's content,
+// not wherever the previous tab happened to be scrolled to.
+useEffect(() => {
+  window.scrollTo(0, 0);
+}, [view]);
+
+  // Reset to the first page whenever the search criteria change.
+  // Adjusting state during render (rather than in an effect) avoids the
+  // extra render pass a useEffect-based reset would trigger.
+  const businessFiltersKey = JSON.stringify([
+    searchTrigger,
+    location,
+    lat,
+    lng,
+    categorySlug,
+    subcategorySlug,
+    search,
+    openNow,
+    deliveryAvailable,
+    onlineOnly,
+    nearby,
+    highlyRated,
+    priceRange,
   ]);
+  const [prevBusinessFiltersKey, setPrevBusinessFiltersKey] = useState(
+    businessFiltersKey
+  );
 
-  useEffect(() => {
-    const fetchBusinesses = async () => {
-      try {
-        const data = await getBusinesses();
-        setBusinesses(data);
-      } catch (error) {
-        console.error("Failed to fetch businesses:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  if (businessFiltersKey !== prevBusinessFiltersKey) {
+    setPrevBusinessFiltersKey(businessFiltersKey);
+    setBusinessesPage(1);
+  }
 
-    fetchBusinesses();
-  }, []);
+  const gigFiltersKey = JSON.stringify([
+    gigSearchTrigger,
+    gigLocation,
+    gigLat,
+    gigLng,
+    gigType,
+    gigCategorySlug,
+    gigSubcategorySlug,
+    gigUrgency,
+  ]);
+  const [prevGigFiltersKey, setPrevGigFiltersKey] = useState(gigFiltersKey);
+
+  if (gigFiltersKey !== prevGigFiltersKey) {
+    setPrevGigFiltersKey(gigFiltersKey);
+    setGigsPage(1);
+  }
+
+useEffect(() => {
+  if (view !== "businesses") return;
+
+  const fetchBusinesses = async () => {
+    try {
+      setLoading(true);
+
+const data = await getBusinesses({
+  location,
+   lat: lat ?? undefined,
+  lng: lng ?? undefined,
+  categorySlug,
+  subcategorySlug,
+  search,
+  openNow,
+  deliveryAvailable,
+  onlineOnly,
+  nearby,
+  highlyRated,
+  priceRange,
+  page: businessesPage,
+  limit: BUSINESSES_PAGE_LIMIT,
+});
+
+      setBusinesses(data.data);
+      setBusinessesPagination(data.pagination);
+      setBusinessesNearby(data.nearby ?? null);
+    } catch (error) {
+      console.error("Failed to fetch businesses:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchBusinesses();
+}, [
+  view,
+  searchTrigger,
+  location,
+  lat,
+  lng,
+  categorySlug,
+  subcategorySlug,
+  search,
+  openNow,
+  deliveryAvailable,
+  onlineOnly,
+  nearby,
+  highlyRated,
+  priceRange,
+  businessesPage,
+]);
+
+useEffect(() => {
+  if (view !== "gigs") return;
+
+  const fetchGigs = async () => {
+    try {
+      setLoading(true);
+
+      const data = await getGigs({
+        location: gigLocation,
+        lat: gigLat ?? undefined,
+        lng: gigLng ?? undefined,
+        type: gigType || undefined,
+        categorySlug: gigCategorySlug,
+        subcategorySlug: gigSubcategorySlug,
+        urgency: gigUrgency || undefined,
+        page: gigsPage,
+        limit: GIGS_PAGE_LIMIT,
+      });
+
+      setGigs(data.data);
+      setGigsPagination(data.pagination);
+      setGigsNearby(data.nearby ?? null);
+    } catch (error) {
+      console.error("Failed to fetch gigs:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchGigs();
+}, [
+  view,
+  gigSearchTrigger,
+  gigLocation,
+  gigLat,
+  gigLng,
+  gigType,
+  gigCategorySlug,
+  gigSubcategorySlug,
+  gigUrgency,
+  gigsPage,
+]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-gray-100 pb-20 md:pb-0">
-      <Navbar />
+    <main
+      className={`bg-gradient-to-b from-white via-gray-50 to-gray-100 ${
+        view === "askAi"
+          ? "flex h-screen flex-col overflow-hidden pb-14 md:pb-0"
+          : "min-h-screen pb-20 md:pb-0"
+      }`}
+    >
+      <Navbar view={view} onNavigate={setView} />
+      <OnboardingTour view={view} setView={setView} onActiveChange={handleTourActiveChange} />
+      <SafetyTipsModal trigger={showSafetyTips} />
 
-      <Hero view={view} setView={setView} />
+      {view !== "askAi" && (
+        <Hero
+  view={view}
+  setView={setView}
+  onAskAI={() => setView("askAi")}
+/>
+      )}
 
-      <div className="max-w-6xl mx-auto px-4 py-10">
+      {view !== "askAi" && (
+        <div className="max-w-6xl mx-auto px-4 py-10">
 
-        {/* ===== ROOMS ===== */}
-        {view === "rooms" && <FeaturedListings />}
+          {view === "rooms" && (
+            <FeaturedListings detectedArea={detectedArea} />
+          )}
 
-        {/* ===== BUSINESSES ===== */}
-        {view === "businesses" && (
-          <div>
-            <div className="mb-8">
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-                Local Businesses
-              </h1>
-              <p className="text-gray-500 mt-2">
-                Services around Cosmo City
-              </p>
-            </div>
+          {view === "businesses" && (
+            <div>
+              <div className="mb-8">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+                  Local Businesses
+                </h1>
 
-            {loading ? (
-              <div className="text-center py-10 text-gray-500">
-                Loading businesses...
+                <p className="text-gray-500 mt-2">
+                  {formatNearbyLabel(
+                    "Services",
+                    location || detectedArea || "you",
+                    businessesNearby,
+                    businesses.length
+                  )}
+                </p>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {businesses.map((biz) => (
-                  <BusinessCard key={biz.id} business={biz} />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
 
-        {/* ===== EVENTS (NEW) ===== */}
-        {view === "events" && (
-          <div>
-            <div className="mb-8">
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-                Community Events
-              </h1>
-              <p className="text-gray-500 mt-2">
-                What’s happening around Cosmo City
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {events.map((event) => (
-                <div
-                  key={event.id}
-                  className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 hover:shadow-lg transition"
-                >
-                  <div className="flex items-center gap-2 text-blue-600 mb-2">
-                    <CalendarDays size={18} />
-                    <span className="text-sm font-medium">{event.date}</span>
+              {loading ? (
+                <div className="text-center py-10 text-gray-500">
+                  Loading businesses...
+                </div>
+              ) : businesses.length === 0 ? (
+                <div className="text-center py-10 text-gray-500">
+                  No businesses listed here yet — be the first.
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {businesses.map((business) => (
+                      <BusinessCard
+                        key={business.id}
+                        business={business}
+                      />
+                    ))}
                   </div>
 
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {event.title}
-                  </h3>
-
-                  <p className="text-sm text-gray-500 mt-1">
-                    {event.location}
-                  </p>
-
-                  <p className="text-sm text-gray-600 mt-3">
-                    {event.description}
-                  </p>
-
-                  <button className="mt-4 w-full bg-blue-600 text-white py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition">
-                    Interested
-                  </button>
-                </div>
-              ))}
+                  {businessesPagination && (
+                    <Pagination
+                      pagination={businessesPagination}
+                      onPageChange={setBusinessesPage}
+                    />
+                  )}
+                </>
+              )}
             </div>
-          </div>
-        )}
+          )}
 
-      </div>
+          {view === "gigs" && (
+            <div>
+              <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+                    Piece Jobs
+                  </h1>
 
-      <Footer />
+                  <p className="text-gray-500 mt-2">
+                    {formatNearbyLabel(
+                      "Piece jobs",
+                      gigLocation || detectedArea || "you",
+                      gigsNearby,
+                      gigs.length
+                    )}
+                  </p>
+                </div>
 
-      {/* MOBILE BOTTOM NAV */}
-      <MobileTabs view={view} setView={setView} />
+                <a
+                  href="/gigs/create"
+                  className="rounded-full bg-gradient-to-r from-violet-600 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:shadow-lg active:scale-95 transition"
+                >
+                  + Post a Piece Job
+                </a>
+              </div>
+
+              {loading ? (
+                <div className="text-center py-10 text-gray-500">
+                  Loading piece jobs...
+                </div>
+              ) : gigs.length === 0 ? (
+                <div className="text-center py-10 text-gray-500">
+                  No piece jobs posted here yet — be the first.
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {gigs.map((gig, index) => (
+                      <GigCard key={gig.id} gig={gig} index={index} />
+                    ))}
+                  </div>
+
+                  {gigsPagination && (
+                    <Pagination
+                      pagination={gigsPagination}
+                      onPageChange={setGigsPage}
+                    />
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+        </div>
+      )}
+
+      {view === "askAi" && <AskAIPanel showNavbar={false} />}
+
+      {view !== "askAi" && <Footer />}
+
+      <MobileTabs
+        view={view}
+        setView={setView}
+        tourActive={tourActive}
+      />
     </main>
   );
 }

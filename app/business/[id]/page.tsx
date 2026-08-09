@@ -8,13 +8,44 @@ import {
   ShieldCheck,
   Phone,
   MessageCircle,
+  Truck,
+  Video,
+  Flag,
+  GraduationCap,
+  Pencil,
+  Trash2,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { useParams, useRouter } from "next/navigation";
 
-import { businesses } from "@/app/data/businesses";
-import BusinessReviewsSection from "@/app/components/BusinessReviewsSection";
-import { Business, getBusiness } from "@/app/services/business.service";
+import Navbar from "@/components/layout/Navbar";
+import BusinessReviewsSection from "@/features/business/components/BusinessReviewsSection";
+import BookingWidget from "@/features/bookings/components/BookingWidget";
+import { Business, getBusiness, deleteBusiness } from "@/features/business/services/business.service";
+import { getProfile } from "@/features/auth/services/auth.service";
+import ReportModal from "@/features/reports/components/ReportModal";
+import ListingStats from "@/components/common/ListingStats";
+import Button, { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { recordView, recordContactClick } from "@/features/analytics/services/analytics.service";
+
+const onImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  e.currentTarget.onerror = null;
+  e.currentTarget.src = "/placeholder.svg";
+};
+
+// Uploaded business media is stored as a path relative to the API origin
+// (e.g. "/uploads/business/..."); seed data uses full external URLs already.
+const getMediaUrl = (path?: string) => {
+  if (!path) {
+    return undefined;
+  }
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  return `${process.env.NEXT_PUBLIC_API_URL}${path}`;
+};
 
 type DayOfWeek =
   | "monday"
@@ -35,8 +66,13 @@ const [business, setBusiness] = useState<Business | null>(null);
 const [loading, setLoading] = useState(true);
 
   const [reportOpen, setReportOpen] = useState(false);
-  const [reason, setReason] = useState("Fake business");
-  const [success, setSuccess] = useState(false);
+
+  // Best-effort ownership check, same pattern as the gig detail page — used
+  // only to decide whether to show the owner-only ListingStats panel and to
+  // skip counting the owner's own visits as a view.
+  const [isOwner, setIsOwner] = useState(false);
+  const [ownerCheckDone, setOwnerCheckDone] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // ✅ IMAGE GALLERY STATE (NEW)
   const [selectedImage, setSelectedImage] = useState(0);
@@ -74,32 +110,61 @@ useEffect(() => {
   }
 }, [id]);
 
+  useEffect(() => {
+    if (!business) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setOwnerCheckDone(true);
+      return;
+    }
+
+    getProfile()
+      .then((profile) => setIsOwner(profile.id === business.ownerId))
+      .catch(() => {})
+      .finally(() => setOwnerCheckDone(true));
+  }, [business]);
+
+  // Record a view once we know whether this is the owner browsing their own
+  // listing — the owner's own visits don't count. See ListingStats for
+  // where this shows up.
+  useEffect(() => {
+    if (!business || !ownerCheckDone || isOwner) return;
+    recordView("business", business.id);
+  }, [business, ownerCheckDone, isOwner]);
+
 if (loading) {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      Loading...
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="flex items-center justify-center py-32">
+        Loading...
+      </div>
     </div>
   );
 }
 
 if (!business) {
   return (
-    <div className="min-h-screen flex items-center justify-center text-gray-500">
-      Business not found
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="flex items-center justify-center py-32 text-gray-500">
+        Business not found
+      </div>
     </div>
   );
 }
 
-  function submitReport() {
-    setSuccess(true);
+  const isPhysical = business.businessType === "physical";
 
-    setTimeout(() => {
-      setSuccess(false);
-      setReportOpen(false);
-    }, 1200);
-  }
+  const hasCoordinates =
+    isPhysical &&
+    business.location?.lat != null &&
+    business.location?.lng != null;
 
-  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${business.location.lat},${business.location.lng}`;
+  const directionsUrl = hasCoordinates
+    ? `https://www.google.com/maps/dir/?api=1&destination=${business.location!.lat},${business.location!.lng}`
+    : undefined;
 
   const days: DayOfWeek[] = [
     "monday",
@@ -132,22 +197,42 @@ if (!business) {
     return R * c;
   }
 
-  const distance = userLocation
-    ? getDistanceKm(
-        userLocation.lat,
-        userLocation.lng,
-        business.location.lat,
-        business.location.lng
-      )
-    : null;
+  const distance =
+    userLocation && hasCoordinates
+      ? getDistanceKm(
+          userLocation.lat,
+          userLocation.lng,
+          business.location!.lat!,
+          business.location!.lng!
+        )
+      : null;
 
-  const phoneNumber = "+27723255319";
-  const whatsappNumber = "+27723255319";
+  const phoneNumber = business.phoneNumber;
 
-  const whatsappLink = `https://wa.me/${whatsappNumber}?text=Hi%20I%20want%20to%20enquire%20about%20your%20services`;
+  const whatsappLink = business.whatsappNumber
+    ? `https://wa.me/${business.whatsappNumber.replace(/[^0-9+]/g, "")}?text=Hi%20I%20want%20to%20enquire%20about%20your%20services`
+    : undefined;
+
+  async function handleDelete() {
+    if (!business) return;
+    if (!confirm(`Delete "${business.name}"? This can't be undone.`)) return;
+
+    setDeleting(true);
+
+    try {
+      await deleteBusiness(business.id);
+      toast.success("Business deleted");
+      router.push("/dashboard");
+    } catch (error: any) {
+      alert(error.message || "Failed to delete.");
+      setDeleting(false);
+    }
+  }
 
   return (
     <main className="min-h-screen bg-gray-50">
+      <Navbar />
+
       <div className="max-w-6xl mx-auto px-4 py-4 md:py-6">
 
         {/* BACK */}
@@ -164,9 +249,10 @@ if (!business) {
           <div className="relative">
 
             <img
-              src={business.images[selectedImage]}
+              src={getMediaUrl(business.images[selectedImage])}
               alt={business.name}
               onClick={() => setGalleryOpen(true)}
+              onError={onImgError}
               className="w-full h-[220px] sm:h-[280px] md:h-[380px] object-cover rounded-xl cursor-pointer"
             />
 
@@ -217,8 +303,9 @@ if (!business) {
                 }`}
               >
                 <img
-                  src={image}
+                  src={getMediaUrl(image)}
                   alt={`${business.name}-${index}`}
+                  onError={onImgError}
                   className="w-24 h-20 object-cover"
                 />
               </button>
@@ -236,14 +323,26 @@ if (!business) {
             </h1>
 
             <p className="text-violet-600 font-medium mt-2">
-              {business.category}
+              {business.category?.name}
+              {business.subcategory && ` › ${business.subcategory.name}`}
             </p>
 
-            <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-600">
-              <div className="flex items-center gap-1">
-                <MapPin size={15} />
-                {business.location.address}
+            {business.credential && (
+              <div className="flex items-center gap-1.5 mt-2 text-amber-700">
+                <GraduationCap size={16} className="shrink-0" />
+                <span className="text-sm font-medium">
+                  {business.credential}
+                </span>
               </div>
+            )}
+
+            <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-600">
+              {isPhysical && business.location?.address && (
+                <div className="flex items-center gap-1">
+                  <MapPin size={15} />
+                  {business.location.address}
+                </div>
+              )}
 
               {distance !== null && (
                 <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold">
@@ -256,11 +355,29 @@ if (!business) {
                 {business.rating}
               </div>
 
-              <div className="flex items-center gap-1 text-green-600">
-                <ShieldCheck size={15} />
-                Verified Business
-              </div>
+              {business.ownerVerified && (
+                <div className="flex items-center gap-1 text-green-600">
+                  <ShieldCheck size={15} />
+                  Phone Verified
+                </div>
+              )}
+
+              {business.supportsDelivery && (
+                <div className="flex items-center gap-1 text-blue-600">
+                  <Truck size={15} />
+                  Delivery available
+                </div>
+              )}
             </div>
+
+            {isOwner && (
+              <ListingStats
+                viewCount={business.viewCount}
+                contactClickCount={business.contactClickCount}
+              />
+            )}
+
+            <BookingWidget businessId={business.id} />
 
             {/* ABOUT */}
             <div className="mt-8">
@@ -273,118 +390,234 @@ if (!business) {
               </p>
             </div>
 
-            {/* LOCATION */}
-            <div className="mt-10">
-              <h2 className="font-semibold text-lg mb-4">
-                Location
-              </h2>
+            {/* VIDEOS */}
+            {business.videos && business.videos.length > 0 && (
+              <div className="mt-10">
+                <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                  <Video size={18} />
+                  Videos
+                </h2>
 
-              <div className="rounded-2xl overflow-hidden mt-3">
-                <iframe
-                  width="100%"
-                  height="250"
-                  loading="lazy"
-                  allowFullScreen
-                  src={`https://www.google.com/maps?q=${business.location.lat},${business.location.lng}&z=15&output=embed`}
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {business.videos.map((videoUrl, index) => (
+                    <video
+                      key={index}
+                      src={getMediaUrl(videoUrl)}
+                      controls
+                      className="w-full rounded-xl bg-black aspect-video"
+                    />
+                  ))}
+                </div>
               </div>
+            )}
 
-              <div className="mt-3">
-                <a
-                  href={directionsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full block bg-violet-600 text-white py-3 rounded-xl text-center"
-                >
-                  Get Directions
-                </a>
+            {/* LOCATION (physical businesses only) */}
+            {hasCoordinates && (
+              <div className="mt-10">
+                <h2 className="font-semibold text-lg mb-4">
+                  Location
+                </h2>
+
+                <div className="rounded-2xl overflow-hidden mt-3">
+                  <iframe
+                    width="100%"
+                    height="250"
+                    loading="lazy"
+                    allowFullScreen
+                    src={`https://www.google.com/maps?q=${business.location!.lat},${business.location!.lng}&z=17&output=embed`}
+                  />
+                </div>
+
+                <div className="mt-3">
+                  <a
+                    href={directionsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full block bg-violet-600 text-white py-3 rounded-xl text-center"
+                  >
+                    Get Directions
+                  </a>
+                </div>
               </div>
-            </div>
+            )}
 
-            <BusinessReviewsSection />
+            <BusinessReviewsSection
+              rating={business.rating}
+              reviewCount={business.reviewCount ?? 0}
+            />
           </div>
 
           {/* SIDEBAR */}
           <div className="hidden lg:block">
             <div className="sticky top-6 bg-white rounded-2xl p-5 shadow-lg">
 
-              <a
-                href={`tel:${phoneNumber}`}
-                className="mt-5 w-full h-11 rounded-xl bg-violet-600 text-white flex items-center justify-center gap-2"
-              >
-                <Phone size={16} />
-                Call Business
-              </a>
+              {phoneNumber ? (
+                <a
+                  href={`tel:${phoneNumber}`}
+                  onClick={() => recordContactClick("business", business.id)}
+                  className={cn(buttonVariants({ variant: "solid", tone: "violet" }), "mt-5 w-full")}
+                >
+                  <Phone size={16} />
+                  Call Business
+                </a>
+              ) : (
+                <Button
+                  disabled
+                  variant="muted"
+                  className="mt-5 w-full"
+                  title="This listing hasn't added a contact number yet"
+                >
+                  <Phone size={16} />
+                  No number listed
+                </Button>
+              )}
 
-              <a
-                href={whatsappLink}
-                target="_blank"
-                className="mt-3 w-full h-11 rounded-xl border flex items-center justify-center gap-2"
-              >
-                <MessageCircle size={16} />
-                WhatsApp
-              </a>
+              {business.supportsWhatsAppOrder && whatsappLink && (
+                <a
+                  href={whatsappLink}
+                  target="_blank"
+                  onClick={() => recordContactClick("business", business.id)}
+                  className={cn(buttonVariants({ variant: "outline" }), "mt-3 w-full")}
+                >
+                  <MessageCircle size={16} />
+                  Order via WhatsApp
+                </a>
+              )}
 
-              <button
-                onClick={() => setReportOpen(true)}
-                className="mt-3 w-full border border-red-500 text-red-500 py-2 rounded-xl text-sm"
-              >
-                Report Business
-              </button>
+              {business.supportsDelivery && (
+                <div className="mt-3 w-full rounded-xl bg-blue-50 py-2.5 text-center text-sm font-medium text-blue-700 flex items-center justify-center gap-2">
+                  <Truck size={16} />
+                  Delivery available
+                </div>
+              )}
+
+              {isOwner ? (
+                <div className="mt-4 flex gap-2">
+                  <Button
+                    onClick={() => router.push(`/business/${business.id}/edit`)}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Pencil size={16} />
+                    Edit
+                  </Button>
+
+                  <Button
+                    onClick={handleDelete}
+                    loading={deleting}
+                    variant="danger-outline"
+                    className="w-full"
+                  >
+                    <Trash2 size={16} />
+                    Delete
+                  </Button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setReportOpen(true)}
+                  className="mt-4 w-full text-center text-xs text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  Report this business
+                </button>
+              )}
 
             </div>
           </div>
         </div>
       </div>
 
-      {/* MODAL + MOBILE BAR (UNCHANGED LOGIC) */}
-      {reportOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl">
+      {/* MOBILE CTA — same layout as the room detail page's mobile bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg p-3 z-50 border-t">
+        <div
+          className={`grid gap-2 ${
+            business.supportsWhatsAppOrder && whatsappLink
+              ? "grid-cols-[1fr_1fr_auto]"
+              : "grid-cols-[1fr_auto]"
+          }`}
+        >
+          {/* CALL */}
+          {phoneNumber ? (
+            <a
+              href={`tel:${phoneNumber}`}
+              onClick={() => recordContactClick("business", business.id)}
+              className={cn(buttonVariants({ variant: "solid", tone: "violet", size: "sm" }), "h-11")}
+            >
+              <Phone size={16} className="shrink-0" />
+              <span className="whitespace-nowrap">Call</span>
+            </a>
+          ) : (
+            <Button
+              disabled
+              variant="muted"
+              size="sm"
+              className="h-11"
+              title="This listing hasn't added a contact number yet"
+            >
+              <Phone size={16} className="shrink-0" />
+              <span className="whitespace-nowrap">No number</span>
+            </Button>
+          )}
 
-            {success ? (
-              <div className="text-center py-10">
-                <p className="text-green-600 font-bold text-lg">
-                  Report submitted successfully ✅
-                </p>
-              </div>
-            ) : (
-              <>
-                <h2 className="text-lg font-bold">Report Business</h2>
+          {/* WHATSAPP */}
+          {business.supportsWhatsAppOrder && whatsappLink && (
+            <a
+              href={whatsappLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => recordContactClick("business", business.id)}
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "h-11")}
+            >
+              <MessageCircle size={16} className="shrink-0 text-green-600" />
+              <span className="whitespace-nowrap">WhatsApp</span>
+            </a>
+          )}
 
-                <p className="text-sm text-gray-500 mt-1">
-                  Tell us what's wrong
-                </p>
-
-                <select
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  className="w-full border p-3 mt-4 rounded-xl"
-                >
-                  <option>Fake business</option>
-                  <option>Scam / fraud</option>
-                  <option>Wrong information</option>
-                  <option>Inappropriate content</option>
-                </select>
-
-                <button
-                  onClick={submitReport}
-                  className="w-full bg-red-600 text-white py-3 mt-4 rounded-xl"
-                >
-                  Submit Report
-                </button>
-
-                <button
-                  onClick={() => setReportOpen(false)}
-                  className="w-full mt-3 text-sm text-gray-500"
-                >
-                  Cancel
-                </button>
-              </>
-            )}
-          </div>
+          {/* Owner sees Edit here instead of Report — reporting your own
+              listing makes no sense. Delete stays desktop-sidebar-only to
+              avoid a destructive action sitting in the easy-to-mistap
+              bottom bar. */}
+          {isOwner ? (
+            <Button
+              onClick={() => router.push(`/business/${business.id}/edit`)}
+              variant="outline"
+              size="sm"
+              className="h-11 px-3"
+            >
+              <Pencil size={16} className="shrink-0" />
+              <span className="whitespace-nowrap">Edit</span>
+            </Button>
+          ) : (
+            // REPORT — labeled, not just an icon, so it reads as "tap to
+            // report" rather than "this listing has been flagged".
+            <Button
+              onClick={() => setReportOpen(true)}
+              variant="danger-outline"
+              size="sm"
+              className="h-11 px-3"
+            >
+              <Flag size={16} className="shrink-0" />
+              <span className="whitespace-nowrap">Report</span>
+            </Button>
+          )}
         </div>
-      )}
+      </div>
+
+      {/* Spacer for fixed bottom bar */}
+      <div className="h-20 lg:hidden" />
+
+      <ReportModal
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        targetType="business"
+        targetId={business.id}
+        title="Report Business"
+        reasonOptions={[
+          "Fake business",
+          "Scam / fraud",
+          "Wrong information",
+          "Inappropriate content",
+        ]}
+      />
     </main>
   );
 }
