@@ -18,6 +18,9 @@ import { getGig, updateGigStatus, deleteGig } from "@/features/gigs/services/gig
 import { getProfile } from "@/features/auth/services/auth.service";
 import ReportModal from "@/features/reports/components/ReportModal";
 import ListingStats from "@/components/common/ListingStats";
+import TikTokFollow from "@/components/common/TikTokFollow";
+import SocialLinkButton from "@/components/common/SocialLinkButton";
+import ShareButton from "@/components/common/ShareButton";
 import Badge from "@/components/ui/badge";
 import Button, { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -49,6 +52,14 @@ export default function GigPage() {
   const [deleting, setDeleting] = useState(false);
 
   const [reportOpen, setReportOpen] = useState(false);
+
+  // With the browser's own scroll restoration turned off app-wide (see
+  // ScrollRestorationManager), every page has to explicitly decide where
+  // it starts — this keeps two different gigs visited back to back from
+  // inheriting whatever scroll depth the previous one left.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
 
   useEffect(() => {
     if (isNaN(id)) return;
@@ -161,13 +172,20 @@ export default function GigPage() {
       <Navbar />
 
       <div className="max-w-3xl mx-auto px-4 py-6">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-black mb-4"
-        >
-          <ArrowLeft size={16} />
-          Back
-        </button>
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-black"
+          >
+            <ArrowLeft size={16} />
+            Back
+          </button>
+
+          <ShareButton
+            title={gig.title}
+            text={`Check out this piece job on The Cosmopolitan: ${gig.title}`}
+          />
+        </div>
 
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-2">
@@ -258,6 +276,9 @@ export default function GigPage() {
                 Contact via WhatsApp
               </a>
             )}
+
+            <TikTokFollow url={gig.ownerTiktokUrl} />
+            <SocialLinkButton url={gig.ownerSocialUrl} />
 
             {isOwner && gig.status !== "filled" && (
               <Button

@@ -91,12 +91,12 @@ if (onboarding.hasListings) {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gray-50 px-5">
-      {/* Background glow */}
-      <div className="absolute left-1/2 top-[-200px] h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-gradient-to-r from-blue-400/20 via-violet-400/20 to-cyan-400/20 blur-[140px] animate-pulse" />
-
-      {/* Floating orbs */}
-      <div className="absolute left-6 top-24 h-28 w-28 rounded-full bg-violet-300/20 blur-3xl animate-bounce" />
-      <div className="absolute bottom-20 right-6 h-36 w-36 rounded-full bg-blue-300/20 blur-3xl animate-pulse" />
+      {/* Background glow — used to pulse/bounce forever, which reads as
+          "something's loading/wrong" to someone unfamiliar with app
+          conventions rather than decoration. Static now. */}
+      <div className="absolute left-1/2 top-[-200px] h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-gradient-to-r from-blue-400/20 via-violet-400/20 to-cyan-400/20 blur-[140px]" />
+      <div className="absolute left-6 top-24 h-28 w-28 rounded-full bg-violet-300/20 blur-3xl" />
+      <div className="absolute bottom-20 right-6 h-36 w-36 rounded-full bg-blue-300/20 blur-3xl" />
 
       <div className="relative z-10 w-full max-w-sm">
         {/* Without this, arriving here (e.g. via a "sign in to continue"

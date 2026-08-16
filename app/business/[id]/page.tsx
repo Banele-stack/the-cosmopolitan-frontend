@@ -16,6 +16,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 import { useParams, useRouter } from "next/navigation";
 
@@ -26,6 +27,9 @@ import { Business, getBusiness, deleteBusiness } from "@/features/business/servi
 import { getProfile } from "@/features/auth/services/auth.service";
 import ReportModal from "@/features/reports/components/ReportModal";
 import ListingStats from "@/components/common/ListingStats";
+import TikTokFollow from "@/components/common/TikTokFollow";
+import SocialLinkButton from "@/components/common/SocialLinkButton";
+import ShareButton from "@/components/common/ShareButton";
 import Button, { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { recordView, recordContactClick } from "@/features/analytics/services/analytics.service";
@@ -83,6 +87,14 @@ const [loading, setLoading] = useState(true);
     lat: number;
     lng: number;
   } | null>(null);
+
+  // With the browser's own scroll restoration turned off app-wide (see
+  // ScrollRestorationManager), every page has to explicitly decide where
+  // it starts — this keeps two different business listings visited back
+  // to back from inheriting whatever scroll depth the previous one left.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
 
 useEffect(() => {
   const fetchBusiness = async () => {
@@ -235,26 +247,44 @@ if (!business) {
 
       <div className="max-w-6xl mx-auto px-4 py-4 md:py-6">
 
-        {/* BACK */}
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-black mb-4"
-        >
-          <ArrowLeft size={16} />
-          Back
-        </button>
+        {/* BACK + SHARE */}
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-black"
+          >
+            <ArrowLeft size={16} />
+            Back
+          </button>
+
+          <ShareButton
+            title={business.name}
+            text={`Check out ${business.name} on The Cosmopolitan`}
+          />
+        </div>
 
         {/* ✅ HERO IMAGE GALLERY (UPDATED) */}
         <div className="bg-white rounded-2xl p-2 shadow-sm">
           <div className="relative">
 
-            <img
-              src={getMediaUrl(business.images[selectedImage])}
-              alt={business.name}
+            <div
+              className="relative h-[220px] sm:h-[280px] md:h-[380px] w-full overflow-hidden rounded-xl cursor-pointer"
               onClick={() => setGalleryOpen(true)}
-              onError={onImgError}
-              className="w-full h-[220px] sm:h-[280px] md:h-[380px] object-cover rounded-xl cursor-pointer"
-            />
+            >
+              {/* next/image: automatic resize + WebP/AVIF + responsive
+                  srcset, so a phone downloads a copy sized for this box
+                  instead of the original upload (up to 5MB). `priority`,
+                  not lazy — this is the page's LCP element. */}
+              <Image
+                src={getMediaUrl(business.images[selectedImage]) || "/placeholder.svg"}
+                alt={business.name}
+                fill
+                sizes="(max-width: 768px) 100vw, 768px"
+                priority
+                onError={onImgError}
+                className="object-cover"
+              />
+            </div>
 
             {/* LEFT */}
             {business.images.length > 1 && (
@@ -302,10 +332,13 @@ if (!business) {
                     : "border-transparent"
                 }`}
               >
-                <img
-                  src={getMediaUrl(image)}
+                <Image
+                  src={getMediaUrl(image) || "/placeholder.svg"}
                   alt={`${business.name}-${index}`}
                   onError={onImgError}
+                  loading="lazy"
+                  width={96}
+                  height={80}
                   className="w-24 h-20 object-cover"
                 />
               </button>
@@ -368,6 +401,14 @@ if (!business) {
                   Delivery available
                 </div>
               )}
+            </div>
+
+            {/* Sidebar (desktop) hides on mobile, so this is the only place
+                mobile sees it — the fixed bottom bar below is reserved for
+                Call/WhatsApp/Edit and is too tight to fit a 4th action. */}
+            <div className="lg:hidden">
+              <TikTokFollow url={business.ownerTiktokUrl} />
+              <SocialLinkButton url={business.ownerSocialUrl} />
             </div>
 
             {isOwner && (
@@ -490,6 +531,9 @@ if (!business) {
                   Delivery available
                 </div>
               )}
+
+              <TikTokFollow url={business.ownerTiktokUrl} />
+              <SocialLinkButton url={business.ownerSocialUrl} />
 
               {isOwner ? (
                 <div className="mt-4 flex gap-2">

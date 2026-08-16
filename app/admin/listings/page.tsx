@@ -3,7 +3,6 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   ShieldCheck,
   Users,
@@ -462,75 +461,41 @@ function AdminDashboard() {
           </div>
         )}
 
-        <AnimatePresence mode="wait">
-          {tab === "overview" && (
-            <motion.div
-              key="overview"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              <OverviewTab
-                stats={stats}
-                loading={loading}
-                onJump={switchTab}
-              />
-            </motion.div>
-          )}
+        {tab === "overview" && (
+          <OverviewTab
+            stats={stats}
+            loading={loading}
+            onJump={switchTab}
+          />
+        )}
 
-          {tab === "listings" && (
-            <motion.div
-              key="listings"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              <ListingsTab
-                statusFilter={statusFilter}
-                setStatusFilter={setStatusFilter}
-                rooms={rooms}
-                businesses={businesses}
-                gigs={gigs}
-                loading={loading}
-                actingId={actingId}
-                onRoomStatus={handleRoomStatus}
-                onBusinessStatus={handleBusinessStatus}
-                onGigStatus={handleGigStatus}
-              />
-            </motion.div>
-          )}
+        {tab === "listings" && (
+          <ListingsTab
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            rooms={rooms}
+            businesses={businesses}
+            gigs={gigs}
+            loading={loading}
+            actingId={actingId}
+            onRoomStatus={handleRoomStatus}
+            onBusinessStatus={handleBusinessStatus}
+            onGigStatus={handleGigStatus}
+          />
+        )}
 
-          {tab === "reviews" && (
-            <motion.div
-              key="reviews"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              <ReviewsTab
-                reviews={reviews}
-                loading={loading}
-                actingId={actingId}
-                onReviewStatus={handleReviewStatus}
-              />
-            </motion.div>
-          )}
+        {tab === "reviews" && (
+          <ReviewsTab
+            reviews={reviews}
+            loading={loading}
+            actingId={actingId}
+            onReviewStatus={handleReviewStatus}
+          />
+        )}
 
-          {tab === "reports" && (
-            <motion.div
-              key="reports"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              <ReportsTab reports={reports} loading={loading} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {tab === "reports" && (
+          <ReportsTab reports={reports} loading={loading} />
+        )}
       </div>
     </main>
   );
@@ -559,14 +524,13 @@ function StatTile({
     warning: "bg-amber-50 text-amber-600",
   }[tone];
 
-  const Wrapper = onClick ? motion.button : motion.div;
+  const Wrapper = onClick ? "button" : "div";
 
   return (
     <Wrapper
-      whileHover={onClick ? { y: -2 } : undefined}
       onClick={onClick}
       className={`flex flex-col items-start gap-3 rounded-2xl bg-white p-4 text-left shadow-sm border border-gray-100/80 ${
-        onClick ? "cursor-pointer" : ""
+        onClick ? "cursor-pointer hover:-translate-y-0.5 transition-transform" : ""
       }`}
     >
       <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${toneClasses}`}>

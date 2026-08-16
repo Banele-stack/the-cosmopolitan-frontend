@@ -6,7 +6,6 @@ import {
   sendEmailVerification,
   sendPhoneVerification,
 } from "@/features/auth/services/auth.service";
-import { motion } from "framer-motion";
 import {
   Mail,
   Smartphone,
@@ -106,17 +105,7 @@ function VerifyCodeForm() {
       <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-blue-300/20 blur-3xl" />
       <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-indigo-300/20 blur-3xl" />
 
-      <motion.div
-        initial={{
-          opacity: 0,
-          y: 25,
-        }}
-        animate={{
-          opacity: 1,
-          y: 0,
-        }}
-        className="relative w-full max-w-md rounded-3xl bg-white/70 p-8 shadow-2xl backdrop-blur-xl"
-      >
+      <div className="relative w-full max-w-md rounded-3xl bg-white/70 p-8 shadow-2xl backdrop-blur-xl">
         {/* Without this, arriving here mid-flow is a dead end short of
             editing the URL. */}
         <Link
@@ -189,7 +178,7 @@ function VerifyCodeForm() {
           <ShieldCheck size={16} />
           Your account only needs to be verified once.
         </div>
-      </motion.div>
+      </div>
     </main>
   );
 }

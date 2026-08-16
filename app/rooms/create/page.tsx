@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -8,7 +8,6 @@ import {
   Sofa, Wifi, Car, PawPrint, Zap, Droplets, Image, Video, X, Upload, Loader2,
   Phone
 } from "lucide-react";
-import { motion } from "framer-motion";
 import FormProgress from "@/components/ui/FormProgress";
 import AuthGate from "@/components/ui/AuthGate";
 import AddressAutocomplete, {
@@ -35,6 +34,15 @@ export default function CreateRoomPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
+
+  // Was one continuous ~950-line scroll through 9 sections — the exact
+  // shape of thing that makes someone give up halfway. Now shows one
+  // section at a time; formRef lets Next lean on the browser's own native
+  // required-field validation (checkValidity/reportValidity), scoped
+  // automatically to just the current step since only its fields are
+  // mounted in the DOM at any given time.
+  const [currentStep, setCurrentStep] = useState(0);
+  const formRef = useRef<HTMLFormElement>(null);
 
   // Listing a property requires an account (so prospective tenants and
   // admin moderation can reach the owner back). Gate on the client, same as
@@ -340,29 +348,6 @@ const response = await fetch(
     }
   };
 
-  const container = {
-    hidden: {},
-    show: {
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const item = {
-    hidden: {
-      opacity: 0,
-      y: 25,
-    },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5,
-      },
-    },
-  };
-
   const FORM_SECTIONS = [
     { id: "section-basics", label: "Basic Information" },
     { id: "section-images", label: "Photos" },
@@ -371,8 +356,44 @@ const response = await fetch(
     { id: "section-details", label: "Property Details" },
     { id: "section-location", label: "Location" },
     { id: "section-availability", label: "Availability" },
+    { id: "section-contact", label: "Contact" },
     { id: "section-amenities", label: "Amenities" },
   ];
+
+  const isLastStep = currentStep === FORM_SECTIONS.length - 1;
+
+  const goNext = () => {
+    const formEl = formRef.current;
+
+    // Only the current step's inputs exist in the DOM right now, so this
+    // native check is automatically scoped to just this step — no manual
+    // per-field tracking needed. reportValidity() shows the browser's own
+    // "please fill this in" bubble right on the empty field.
+    if (formEl && !formEl.checkValidity()) {
+      formEl.reportValidity();
+      return;
+    }
+
+    // The map pin isn't a native form field, so checkValidity() can't see
+    // it — same requirement the original submit-time check enforced.
+    if (
+      FORM_SECTIONS[currentStep].id === "section-location" &&
+      (form.lat == null || form.lng == null)
+    ) {
+      toast.error(
+        "Please confirm your property's exact location on the map before continuing."
+      );
+      return;
+    }
+
+    setCurrentStep((step) => Math.min(step + 1, FORM_SECTIONS.length - 1));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const goBack = () => {
+    setCurrentStep((step) => Math.max(step - 1, 0));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   // Hold the page blank until the auth check resolves, so a logged-out
   // visitor never sees the form flash before the sign-in prompt swaps in.
@@ -402,6 +423,7 @@ const response = await fetch(
       <FormProgress
         sections={FORM_SECTIONS}
         accent="from-green-500 to-emerald-600"
+        activeIndex={currentStep}
       />
 
       {/* Background blobs */}
@@ -409,30 +431,13 @@ const response = await fetch(
       <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-green-300/20 blur-3xl" />
       <div className="absolute left-1/2 top-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-300/10 blur-3xl" />
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="relative mx-auto max-w-2xl"
-      >
-        <motion.div
-          variants={item}
-          className="rounded-3xl border border-white/40 bg-white/70 p-8 shadow-2xl backdrop-blur-xl"
-        >
+      <div className="relative mx-auto max-w-2xl">
+        <div className="rounded-3xl border border-white/40 bg-white/70 p-8 shadow-2xl backdrop-blur-xl">
           {/* Header */}
           <div className="mb-8 text-center">
-            <motion.div
-              animate={{
-                y: [0, -6, 0],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-              }}
-              className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 shadow-xl"
-            >
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 shadow-xl">
               <BedDouble size={30} className="text-white" />
-            </motion.div>
+            </div>
 
             <h1 className="text-3xl font-bold text-gray-900">
               List Your Property
@@ -443,13 +448,12 @@ const response = await fetch(
             </p>
           </div>
 
-          <motion.form
-            variants={container}
+          <form ref={formRef}
             onSubmit={handleSubmit}
-            className="space-y-6"
-          >
+            className="space-y-6">
             {/* Basic Information */}
-            <motion.div id="section-basics" variants={item}>
+            {currentStep === 0 && (
+            <div id="section-basics">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <Home size={16} className="text-green-600" />
                 Basic Information
@@ -507,10 +511,12 @@ const response = await fetch(
                   className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-green-500 focus:ring-4 focus:ring-green-200 outline-none resize-none"
                 />
               </div>
-            </motion.div>
+            </div>
+            )}
 
             {/* Image Upload */}
-            <motion.div id="section-images" variants={item}>
+            {currentStep === 1 && (
+            <div id="section-images">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <Image size={16} className="text-green-600" />
                 Property Images
@@ -598,10 +604,12 @@ const response = await fetch(
                   </p>
                 )}
               </div>
-            </motion.div>
+            </div>
+            )}
 
             {/* Video Upload */}
-            <motion.div id="section-videos" variants={item}>
+            {currentStep === 2 && (
+            <div id="section-videos">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <Video size={16} className="text-green-600" />
                 Property Videos
@@ -678,10 +686,12 @@ const response = await fetch(
                   </p>
                 )}
               </div>
-            </motion.div>
+            </div>
+            )}
 
             {/* Pricing */}
-            <motion.div id="section-pricing" variants={item}>
+            {currentStep === 3 && (
+            <div id="section-pricing">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <DollarSign size={16} className="text-green-600" />
                 Pricing
@@ -708,10 +718,12 @@ const response = await fetch(
                   className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-green-500 focus:ring-4 focus:ring-green-200 outline-none"
                 />
               </div>
-            </motion.div>
+            </div>
+            )}
 
             {/* Property Details */}
-            <motion.div id="section-details" variants={item}>
+            {currentStep === 4 && (
+            <div id="section-details">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <BedDouble size={16} className="text-green-600" />
                 Property Details
@@ -748,10 +760,12 @@ const response = await fetch(
                   ))}
                 </select>
               </div>
-            </motion.div>
+            </div>
+            )}
 
             {/* Location */}
-            <motion.div id="section-location" variants={item}>
+            {currentStep === 5 && (
+            <div id="section-location">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <MapPin size={16} className="text-green-600" />
                 Location
@@ -774,6 +788,7 @@ const response = await fetch(
                   }
                   placeholder="Start typing your street address *"
                   inputClassName="w-full h-auto rounded-xl border border-gray-200 bg-white p-3 pl-10 transition-all duration-300 focus:border-green-500 focus:ring-4 focus:ring-green-200 outline-none text-base"
+                  showUseCurrentLocation
                 />
 
                 <input
@@ -800,16 +815,20 @@ const response = await fetch(
                   />
 
                   <p className="mt-2 text-xs text-gray-400">
-                    The address search gets you close — drag the pin (or tap
-                    the map) to the exact gate or entrance. This is what
-                    tenants will actually navigate to.
+                    Easiest: tap &quot;Use my current location&quot; above
+                    while you&apos;re standing at the gate or entrance. Typing
+                    an address gets you close too — just drag the pin (or tap
+                    the map) the rest of the way. This is what tenants will
+                    actually navigate to.
                   </p>
                 </div>
               </div>
-            </motion.div>
+            </div>
+            )}
 
             {/* Availability */}
-            <motion.div id="section-availability" variants={item}>
+            {currentStep === 6 && (
+            <div id="section-availability">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <Calendar size={16} className="text-green-600" />
                 Availability <span className="text-red-500">*</span>
@@ -840,10 +859,12 @@ const response = await fetch(
                   ))}
                 </select>
               </div>
-            </motion.div>
+            </div>
+            )}
 
             {/* Contact — what the listing's Call/WhatsApp buttons use */}
-            <motion.div variants={item}>
+            {currentStep === 7 && (
+            <div id="section-contact">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <Phone size={16} className="text-green-600" />
                 Contact
@@ -873,10 +894,12 @@ const response = await fetch(
               <p className="mt-1.5 text-xs text-gray-400">
                 Interested renters will call or WhatsApp this number directly — leave WhatsApp blank to use the same number.
               </p>
-            </motion.div>
+            </div>
+            )}
 
             {/* Amenities */}
-            <motion.div id="section-amenities" variants={item}>
+            {currentStep === 8 && (
+            <div id="section-amenities">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <Sofa size={16} className="text-green-600" />
                 Amenities
@@ -913,39 +936,65 @@ const response = await fetch(
                   </label>
                 ))}
               </div>
-            </motion.div>
+            </div>
+            )}
 
-            <motion.button
-              variants={item}
-              whileHover={{
-                scale: 1.02,
-              }}
-              whileTap={{
-                scale: 0.97,
-              }}
-              type="submit"
-              disabled={loading || uploadingImages || uploadingVideos}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 py-3.5 font-semibold text-white shadow-lg transition-all hover:shadow-green-400/40 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loading ? (
-                <>
-                  <Loader2 size={18} className="animate-spin" />
-                  {uploadingImages
-                    ? 'Uploading Images...'
-                    : uploadingVideos
-                    ? 'Uploading Videos...'
-                    : 'Creating Property...'}
-                </>
-              ) : (
-                <>
-                  <Sparkles size={18} />
-                  Create Property
-                </>
+            {/* Back / Next — only the last step (Amenities) shows the real
+                submit button, so nothing gets created until every step has
+                been through its own validation. */}
+            <div className="flex gap-3">
+              {currentStep > 0 && (
+                <button
+                  type="button"
+                  onClick={goBack}
+                  className="rounded-xl border border-gray-300 bg-white px-5 py-3.5 font-semibold text-gray-700 transition-all hover:bg-gray-50"
+                >
+                  Back
+                </button>
               )}
-            </motion.button>
-          </motion.form>
-        </motion.div>
-      </motion.div>
+
+              {/* Two separate conditional blocks — not a ternary — so Next
+                  and Create Property are distinct DOM nodes. A ternary here
+                  previously let React patch the same <button> node's type
+                  from "button" to "submit" in place; browsers can carry a
+                  click already in flight over onto a type mutated mid-click,
+                  which silently submitted the form the instant this step
+                  became the last one — before the user had touched
+                  anything on it. See business/create's button block, which
+                  already uses this safe pattern. */}
+              {!isLastStep && (
+                <button type="button"
+            onClick={goNext}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 py-3.5 font-semibold text-white shadow-lg transition-all hover:shadow-green-400/40">
+                  Next
+                </button>
+              )}
+
+              {isLastStep && (
+                <button type="submit"
+            disabled={loading || uploadingImages || uploadingVideos}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 py-3.5 font-semibold text-white shadow-lg transition-all hover:shadow-green-400/40 disabled:cursor-not-allowed disabled:opacity-60">
+                  {loading ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      {uploadingImages
+                        ? 'Uploading Images...'
+                        : uploadingVideos
+                        ? 'Uploading Videos...'
+                        : 'Creating Property...'}
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={18} />
+                      Create Property
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
+      </div>
     </main>
   );
 }

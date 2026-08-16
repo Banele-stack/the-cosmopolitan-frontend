@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, type Variants } from "framer-motion";
 import {
   User,
   Phone,
@@ -23,6 +22,7 @@ import {
   Check,
   X,
   Loader2,
+  Link2,
 } from "lucide-react";
 import { getProfile, logout, updateProfile } from "@/features/auth/services/auth.service";
 import Button from "@/components/ui/button";
@@ -46,6 +46,17 @@ export default function AccountPage() {
   const [surnameDraft, setSurnameDraft] = useState("");
   const [savingName, setSavingName] = useState(false);
 
+  // Same two fields as signup (see app/auth/signup/page.tsx) — kept
+  // separate rather than one shared slot so an owner who's active on both
+  // Facebook and TikTok doesn't have to pick one. Editable here too since
+  // plenty of people don't have either link ready at signup, and whatever
+  // they set flows onto every listing/room they own (ownerSocialUrl/
+  // ownerTiktokUrl — see room.service.ts and friends).
+  const [editingSocial, setEditingSocial] = useState(false);
+  const [socialLinkDraft, setSocialLinkDraft] = useState("");
+  const [tiktokUrlDraft, setTiktokUrlDraft] = useState("");
+  const [savingSocial, setSavingSocial] = useState(false);
+
   useEffect(() => {
     (async () => {
       try {
@@ -53,6 +64,8 @@ export default function AccountPage() {
         setUser(profile);
         setFirstNameDraft(profile.firstName ?? "");
         setSurnameDraft(profile.surname ?? "");
+        setSocialLinkDraft(profile.socialLink ?? "");
+        setTiktokUrlDraft(profile.tiktokUrl ?? "");
       } catch {
         router.push("/auth/login");
         return;
@@ -101,6 +114,37 @@ export default function AccountPage() {
     }
   };
 
+  // Users paste links in every shape ("facebook.com/x", "tiktok.com/@x",
+  // "https://..."). Mirrors the same normalizer on the signup form so a
+  // link added here behaves identically to one added at signup.
+  const normalizeSocialLink = (link: string) => {
+    const trimmed = link.trim();
+
+    if (!trimmed) return undefined;
+
+    return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  };
+
+  const saveSocialLinks = async () => {
+    setSavingSocial(true);
+
+    try {
+      const updated = await updateProfile({
+        socialLink: normalizeSocialLink(socialLinkDraft) ?? "",
+        tiktokUrl: normalizeSocialLink(tiktokUrlDraft) ?? "",
+      });
+
+      setUser((prev: any) => ({ ...prev, ...updated }));
+      setSocialLinkDraft(updated.socialLink ?? "");
+      setTiktokUrlDraft(updated.tiktokUrl ?? "");
+      setEditingSocial(false);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSavingSocial(false);
+    }
+  };
+
   const memberSince = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString("en-ZA", {
         month: "short",
@@ -108,40 +152,10 @@ export default function AccountPage() {
       })
     : "—";
 
-  const container: Variants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.06,
-      },
-    },
-  };
-
-  const item: Variants = {
-    hidden: {
-      opacity: 0,
-      y: 20,
-    },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 300,
-        damping: 24,
-      },
-    },
-  };
-
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
-        >
+        <div className="text-center">
           <div className="relative">
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="h-16 w-16 rounded-full border-4 border-gray-200 border-t-blue-600 animate-spin" />
@@ -149,24 +163,16 @@ export default function AccountPage() {
             <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 opacity-10" />
           </div>
           <p className="mt-4 text-sm text-gray-500 font-medium">Loading your account...</p>
-        </motion.div>
+        </div>
       </div>
     );
   }
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50/80 px-4 py-8">
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="mx-auto max-w-6xl"
-      >
+      <div className="mx-auto max-w-6xl">
         {/* Navigation Bar */}
-        <motion.div
-          variants={item}
-          className="mb-8 flex items-center justify-between"
-        >
+        <div className="mb-8 flex items-center justify-between">
           <button
   type="button"
   onClick={() => router.push("/")}
@@ -189,33 +195,24 @@ export default function AccountPage() {
             >
               <Bell size={20} />
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <button
               onClick={() => router.push("/dashboard")}
-              className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-all hover:shadow-md"
+              className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-all hover:shadow-md active:scale-95"
             >
               Dashboard
-            </motion.button>
+            </button>
           </div>
-        </motion.div>
+        </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Left Column - Profile */}
-          <motion.div
-            variants={item}
-            className="lg:col-span-1"
-          >
+          <div className="lg:col-span-1">
             <div className="overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-100/80">
               {/* Profile Header */}
               <div className="relative">
                 <div className="h-20 bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-500" />
                 <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                    className="relative"
-                  >
+                  <div className="relative">
                     <div className="flex h-20 w-20 items-center justify-center rounded-2xl border-4 border-white bg-white text-2xl font-bold text-gray-700 shadow-lg">
                       {user.firstName?.charAt(0).toUpperCase()}
                       {user.surname?.charAt(0).toUpperCase()}
@@ -228,7 +225,7 @@ export default function AccountPage() {
                         <BadgeCheck size={12} className="text-white" />
                       </div>
                     )}
-                  </motion.div>
+                  </div>
                 </div>
               </div>
 
@@ -317,17 +314,14 @@ export default function AccountPage() {
                 </Button>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Right Column - Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Stats Grid — every number here is real: listings come from
                 the same /dashboard data the Dashboard page uses, so the
                 two screens can't disagree. */}
-            <motion.div
-              variants={item}
-              className="grid grid-cols-3 gap-4"
-            >
+            <div className="grid grid-cols-3 gap-4">
               {[
                 {
                   label: "Listings",
@@ -341,35 +335,29 @@ export default function AccountPage() {
                   icon: Star,
                 },
               ].map((stat) => (
-                <motion.div
+                <div
                   key={stat.label}
-                  whileHover={{ y: -2 }}
-                  className="rounded-2xl bg-white p-4 shadow-sm border border-gray-100/80"
+                  className="rounded-2xl bg-white p-4 shadow-sm border border-gray-100/80 transition-transform hover:-translate-y-0.5"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
                     <stat.icon size={18} />
                   </div>
                   <p className="mt-3 text-2xl font-bold text-gray-900">{stat.value}</p>
                   <p className="text-xs text-gray-500">{stat.label}</p>
-                </motion.div>
+                </div>
               ))}
-            </motion.div>
+            </div>
 
             {/* Quick Actions — only "Edit Profile" actually does
                 something (it scrolls up to the inline name editor above);
                 the rest are honestly marked as not built yet instead of
                 looking clickable and doing nothing. */}
-            <motion.div
-              variants={item}
-              className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100/80"
-            >
+            <div className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100/80">
               <h3 className="mb-4 text-sm font-semibold text-gray-900">Quick Actions</h3>
               <div className="grid gap-3 sm:grid-cols-2">
-                <motion.button
-                  whileHover={{ scale: 1.02, backgroundColor: "#f9fafb" }}
-                  whileTap={{ scale: 0.98 }}
+                <button
                   onClick={() => setEditingName(true)}
-                  className="flex items-center gap-3 rounded-xl p-3 text-left transition-all"
+                  className="flex items-center gap-3 rounded-xl p-3 text-left transition-colors hover:bg-gray-50"
                 >
                   <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gray-50 text-gray-500">
                     <User size={17} />
@@ -379,13 +367,11 @@ export default function AccountPage() {
                     <p className="truncate text-xs text-gray-400">Update your name</p>
                   </div>
                   <ChevronRight size={16} className="flex-shrink-0 text-gray-300" />
-                </motion.button>
+                </button>
 
-                <motion.button
-                  whileHover={{ scale: 1.02, backgroundColor: "#f9fafb" }}
-                  whileTap={{ scale: 0.98 }}
+                <button
                   onClick={() => router.push("/bookings")}
-                  className="flex items-center gap-3 rounded-xl p-3 text-left transition-all"
+                  className="flex items-center gap-3 rounded-xl p-3 text-left transition-colors hover:bg-gray-50"
                 >
                   <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gray-50 text-gray-500">
                     <Calendar size={17} />
@@ -395,7 +381,7 @@ export default function AccountPage() {
                     <p className="truncate text-xs text-gray-400">Appointments you've booked</p>
                   </div>
                   <ChevronRight size={16} className="flex-shrink-0 text-gray-300" />
-                </motion.button>
+                </button>
 
                 {[
                   { icon: Key, label: "Security", description: "Password & 2FA" },
@@ -420,13 +406,128 @@ export default function AccountPage() {
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </div>
+
+            {/* Social Links — Facebook and TikTok as two separate fields
+                (not one shared slot), since plenty of owners run both.
+                Whatever's set here shows up on every listing/room this
+                account owns (see SocialLinkButton/TikTokFollow on the
+                room/business/gig detail pages) — not just a personal
+                profile link, a business or ad page works just as well. */}
+            <div className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100/80">
+              <div className="mb-1 flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-900">Social Links</h3>
+
+                {!editingSocial && (
+                  <button
+                    onClick={() => setEditingSocial(true)}
+                    className="flex items-center gap-1 text-xs font-medium text-blue-600 transition-colors hover:text-blue-700"
+                  >
+                    <Pencil size={12} />
+                    Edit
+                  </button>
+                )}
+              </div>
+
+              <p className="mb-4 text-xs text-gray-400">
+                Advertise on Facebook or TikTok? Add that page's link — it'll
+                appear on every listing and room you have, not just your
+                personal profile.
+              </p>
+
+              {editingSocial ? (
+                <div className="space-y-3">
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-gray-500">
+                      Facebook or LinkedIn link
+                    </label>
+                    <input
+                      value={socialLinkDraft}
+                      onChange={(e) => setSocialLinkDraft(e.target.value)}
+                      placeholder="facebook.com/yourpage"
+                      autoComplete="url"
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-gray-500">
+                      TikTok link
+                    </label>
+                    <input
+                      value={tiktokUrlDraft}
+                      onChange={(e) => setTiktokUrlDraft(e.target.value)}
+                      placeholder="tiktok.com/@youraccount"
+                      autoComplete="url"
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      onClick={saveSocialLinks}
+                      disabled={savingSocial}
+                      className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
+                    >
+                      {savingSocial ? (
+                        <Loader2 size={13} className="animate-spin" />
+                      ) : (
+                        <Check size={13} />
+                      )}
+                      Save
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingSocial(false);
+                        setSocialLinkDraft(user.socialLink ?? "");
+                        setTiktokUrlDraft(user.tiktokUrl ?? "");
+                      }}
+                      className="flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600"
+                    >
+                      <X size={13} />
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Link2 size={14} className="flex-shrink-0 text-gray-400" />
+                    {user.socialLink ? (
+                      <a
+                        href={user.socialLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="truncate text-blue-600 hover:underline"
+                      >
+                        {user.socialLink}
+                      </a>
+                    ) : (
+                      <span className="text-gray-400">No Facebook/LinkedIn link added</span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 text-sm">
+                    <Link2 size={14} className="flex-shrink-0 text-gray-400" />
+                    {user.tiktokUrl ? (
+                      <a
+                        href={user.tiktokUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="truncate text-blue-600 hover:underline"
+                      >
+                        {user.tiktokUrl}
+                      </a>
+                    ) : (
+                      <span className="text-gray-400">No TikTok link added</span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Listings — real data instead of a fabricated activity feed. */}
-            <motion.div
-              variants={item}
-              className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100/80"
-            >
+            <div className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100/80">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-gray-900">Your Listings</h3>
                 <button
@@ -478,10 +579,10 @@ export default function AccountPage() {
                   ))}
                 </div>
               )}
-            </motion.div>
+            </div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </main>
   );
 }

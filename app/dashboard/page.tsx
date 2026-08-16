@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import {
   Building2,
@@ -151,29 +150,6 @@ export default function DashboardPage() {
     }
   };
 
-  const container = {
-    hidden: {},
-    show: {
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const item = {
-    hidden: {
-      opacity: 0,
-      y: 25,
-    },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5,
-      },
-    },
-  };
-
   if (loading) {
     return (
       <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
@@ -181,17 +157,12 @@ export default function DashboardPage() {
         <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-indigo-300/20 blur-3xl" />
         <div className="absolute left-1/2 top-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-purple-300/10 blur-3xl" />
         
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="relative text-center"
-        >
+        <div className="relative text-center">
           <div className="mb-4 flex justify-center">
             <Spinner size="lg" className="text-blue-500" />
           </div>
           <p className="text-gray-600 font-medium">Loading your dashboard...</p>
-        </motion.div>
+        </div>
       </div>
     );
   }
@@ -203,17 +174,9 @@ export default function DashboardPage() {
       <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-indigo-300/20 blur-3xl" />
       <div className="absolute left-1/2 top-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-purple-300/10 blur-3xl" />
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="relative mx-auto max-w-6xl"
-      >
+      <div className="relative mx-auto max-w-6xl">
         {/* Navigation Bar */}
-        <motion.nav
-          variants={item}
-          className="mb-8 flex items-center justify-between rounded-2xl border border-white/40 bg-white/70 px-6 py-4 shadow-lg backdrop-blur-xl"
-        >
+        <nav className="mb-8 flex items-center justify-between rounded-2xl border border-white/40 bg-white/70 px-6 py-4 shadow-lg backdrop-blur-xl">
           <div className="flex items-center gap-3">
             <Image
               src="/CosmoBusinesses.png"
@@ -229,46 +192,26 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => router.push("/")}
-              className="flex items-center gap-2 rounded-xl bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-200"
-            >
+            <button onClick={() => router.push("/")}
+              className="flex items-center gap-2 rounded-xl bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-200">
               <Home size={16} />
               <span className="hidden sm:inline">Home</span>
-            </motion.button>
+            </button>
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => router.push("/auth/account")}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-md transition-all hover:shadow-blue-400/40"
-            >
+            <button onClick={() => router.push("/auth/account")}
+              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-md transition-all hover:shadow-blue-400/40">
               <User size={16} />
               <span className="hidden sm:inline">Account</span>
-            </motion.button>
+            </button>
           </div>
-        </motion.nav>
+        </nav>
 
         {/* Header */}
-        <motion.div
-          variants={item}
-          className="mb-8 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center"
-        >
+        <div className="mb-8 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
           <div>
-            <motion.div
-              animate={{
-                y: [0, -4, 0],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-              }}
-              className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg"
-            >
+            <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg">
               <TrendingUp size={24} className="text-white" />
-            </motion.div>
+            </div>
             <h1 className="text-3xl font-bold text-gray-900">
               Welcome Back!
             </h1>
@@ -277,187 +220,112 @@ export default function DashboardPage() {
             </p>
           </div>
           
-          <motion.div
-            variants={item}
-            className="flex flex-wrap gap-3"
-          >
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => router.push("/business/create")}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-2.5 font-semibold text-white shadow-lg transition-all hover:shadow-blue-400/40"
-            >
+          <div className="flex flex-wrap gap-3">
+            <button onClick={() => router.push("/business/create")}
+              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-2.5 font-semibold text-white shadow-lg transition-all hover:shadow-blue-400/40">
               <Plus size={18} />
               Add Business
-            </motion.button>
+            </button>
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => router.push("/rooms/create")}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 px-5 py-2.5 font-semibold text-white shadow-lg transition-all hover:shadow-green-400/40"
-            >
+            <button onClick={() => router.push("/rooms/create")}
+              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 px-5 py-2.5 font-semibold text-white shadow-lg transition-all hover:shadow-green-400/40">
               <Plus size={18} />
               Add Room
-            </motion.button>
+            </button>
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => router.push("/gigs/create")}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 px-5 py-2.5 font-semibold text-white shadow-lg transition-all hover:shadow-amber-400/40"
-            >
+            <button onClick={() => router.push("/gigs/create")}
+              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 px-5 py-2.5 font-semibold text-white shadow-lg transition-all hover:shadow-amber-400/40">
               <Plus size={18} />
               Post Piece Job
-            </motion.button>
-          </motion.div>
-        </motion.div>
+            </button>
+          </div>
+        </div>
 
         {/* Stats Cards */}
-        <motion.div
-          variants={container}
-          className="mb-8 grid gap-4 md:grid-cols-3"
-        >
-          <motion.div
-            variants={item}
-            whileHover={{ y: -4, transition: { duration: 0.2 } }}
-            className={cn(cardVariants({ variant: "glass", padding: "lg" }), "group transition-all hover:shadow-xl")}
-          >
+        <div className="mb-8 grid gap-4 md:grid-cols-3">
+          <div className={cn(cardVariants({ variant: "glass", padding: "lg" }), "group transition-all hover:shadow-xl")}>
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">
                   Total Businesses
                 </p>
-                <motion.h2 
-                  initial={{ scale: 0.5, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                  className="mt-2 text-4xl font-bold text-gray-900"
-                >
+                <h2 className="mt-2 text-4xl font-bold text-gray-900">
                   {dashboard.businesses.length}
-                </motion.h2>
+                </h2>
                 <p className="mt-1 text-sm text-gray-400">
                   {dashboard.businesses.length === 0 ? "No businesses yet" : "Active listings"}
                 </p>
               </div>
-              <motion.div 
-                whileHover={{ rotate: 12, scale: 1.1 }}
-                className="rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 p-3 text-white shadow-lg"
-              >
+              <div className="rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 p-3 text-white shadow-lg">
                 <Building2 size={24} />
-              </motion.div>
+              </div>
             </div>
             {dashboard.businesses.length > 0 && (
-              <motion.div 
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
-                className="mt-4 flex items-center gap-1 text-sm text-blue-600"
-              >
+              <div className="mt-4 flex items-center gap-1 text-sm text-blue-600">
                 <TrendingUp size={14} />
                 <span>View all businesses</span>
                 <ArrowRight size={14} />
-              </motion.div>
+              </div>
             )}
-          </motion.div>
+          </div>
 
-          <motion.div
-            variants={item}
-            whileHover={{ y: -4, transition: { duration: 0.2 } }}
-            className={cn(cardVariants({ variant: "glass", padding: "lg" }), "group transition-all hover:shadow-xl")}
-          >
+          <div className={cn(cardVariants({ variant: "glass", padding: "lg" }), "group transition-all hover:shadow-xl")}>
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">
                   Total Rooms
                 </p>
-                <motion.h2 
-                  initial={{ scale: 0.5, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                  className="mt-2 text-4xl font-bold text-gray-900"
-                >
+                <h2 className="mt-2 text-4xl font-bold text-gray-900">
                   {dashboard.rooms.length}
-                </motion.h2>
+                </h2>
                 <p className="mt-1 text-sm text-gray-400">
                   {dashboard.rooms.length === 0 ? "No rooms yet" : "Available properties"}
                 </p>
               </div>
-              <motion.div 
-                whileHover={{ rotate: 12, scale: 1.1 }}
-                className="rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 p-3 text-white shadow-lg"
-              >
+              <div className="rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 p-3 text-white shadow-lg">
                 <BedDouble size={24} />
-              </motion.div>
+              </div>
             </div>
             {dashboard.rooms.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
-                className="mt-4 flex items-center gap-1 text-sm text-green-600"
-              >
+              <div className="mt-4 flex items-center gap-1 text-sm text-green-600">
                 <TrendingUp size={14} />
                 <span>View all rooms</span>
                 <ArrowRight size={14} />
-              </motion.div>
+              </div>
             )}
-          </motion.div>
+          </div>
 
-          <motion.div
-            variants={item}
-            whileHover={{ y: -4, transition: { duration: 0.2 } }}
-            className={cn(cardVariants({ variant: "glass", padding: "lg" }), "group transition-all hover:shadow-xl")}
-          >
+          <div className={cn(cardVariants({ variant: "glass", padding: "lg" }), "group transition-all hover:shadow-xl")}>
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">
                   Total Piece Jobs
                 </p>
-                <motion.h2
-                  initial={{ scale: 0.5, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                  className="mt-2 text-4xl font-bold text-gray-900"
-                >
+                <h2 className="mt-2 text-4xl font-bold text-gray-900">
                   {dashboard.gigs.length}
-                </motion.h2>
+                </h2>
                 <p className="mt-1 text-sm text-gray-400">
                   {dashboard.gigs.length === 0 ? "No piece jobs yet" : "Posted tasks"}
                 </p>
               </div>
-              <motion.div
-                whileHover={{ rotate: 12, scale: 1.1 }}
-                className="rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 p-3 text-white shadow-lg"
-              >
+              <div className="rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 p-3 text-white shadow-lg">
                 <Zap size={24} />
-              </motion.div>
+              </div>
             </div>
             {dashboard.gigs.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
-                className="mt-4 flex items-center gap-1 text-sm text-amber-600"
-              >
+              <div className="mt-4 flex items-center gap-1 text-sm text-amber-600">
                 <TrendingUp size={14} />
                 <span>View all piece jobs</span>
                 <ArrowRight size={14} />
-              </motion.div>
+              </div>
             )}
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
         {/* Listings */}
-        <motion.div
-          variants={container}
-          className="grid gap-6 md:grid-cols-3"
-        >
+        <div className="grid gap-6 md:grid-cols-3">
           {/* Businesses List */}
-          <motion.div
-            variants={item}
-            className={cn(cardVariants({ variant: "glass", padding: "lg" }))}
-          >
+          <div className={cn(cardVariants({ variant: "glass", padding: "lg" }))}>
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <Building2 size={20} className="text-blue-600" />
@@ -471,7 +339,7 @@ export default function DashboardPage() {
             </div>
 
             {dashboard.businesses.length === 0 ? (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+              <div>
                 <EmptyState
                   icon={<Building2 size={40} />}
                   title="No businesses yet"
@@ -487,23 +355,13 @@ export default function DashboardPage() {
                     </Button>
                   }
                 />
-              </motion.div>
+              </div>
             ) : (
               <div className="space-y-3">
                 {dashboard.businesses.map((business, index) => (
-                  <motion.div
-                    key={business.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    whileHover={{ 
-                      scale: 1.02,
-                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                      transition: { duration: 0.2 }
-                    }}
-                    className="group flex cursor-pointer items-center justify-between rounded-xl border border-gray-200 bg-white/50 p-4 transition-all hover:border-blue-200"
-                    onClick={() => router.push(`/business/${business.id}`)}
-                  >
+                  <div key={business.id}
+              className="group flex cursor-pointer items-center justify-between rounded-xl border border-gray-200 bg-white/50 p-4 transition-all hover:border-blue-200"
+              onClick={() => router.push(`/business/${business.id}`)}>
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 text-blue-600 font-semibold">
                         {business.name.charAt(0).toUpperCase()}
@@ -549,17 +407,14 @@ export default function DashboardPage() {
                       </button>
                       <ArrowRight size={16} className="text-gray-300 group-hover:text-blue-500 transition-colors" />
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             )}
-          </motion.div>
+          </div>
 
           {/* Rooms List */}
-          <motion.div
-            variants={item}
-            className={cn(cardVariants({ variant: "glass", padding: "lg" }))}
-          >
+          <div className={cn(cardVariants({ variant: "glass", padding: "lg" }))}>
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <BedDouble size={20} className="text-green-600" />
@@ -573,7 +428,7 @@ export default function DashboardPage() {
             </div>
 
             {dashboard.rooms.length === 0 ? (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+              <div>
                 <EmptyState
                   icon={<BedDouble size={40} />}
                   title="No rooms yet"
@@ -589,23 +444,13 @@ export default function DashboardPage() {
                     </Button>
                   }
                 />
-              </motion.div>
+              </div>
             ) : (
               <div className="space-y-3">
                 {dashboard.rooms.map((room, index) => (
-                  <motion.div
-                    key={room.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    whileHover={{ 
-                      scale: 1.02,
-                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                      transition: { duration: 0.2 }
-                    }}
-                    className="group flex cursor-pointer items-center justify-between rounded-xl border border-gray-200 bg-white/50 p-4 transition-all hover:border-green-200"
-                    onClick={() => router.push(`/rooms/${room.id}`)}
-                  >
+                  <div key={room.id}
+              className="group flex cursor-pointer items-center justify-between rounded-xl border border-gray-200 bg-white/50 p-4 transition-all hover:border-green-200"
+              onClick={() => router.push(`/rooms/${room.id}`)}>
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-green-100 to-emerald-200 text-green-600 font-semibold">
                         {room.name.charAt(0).toUpperCase()}
@@ -642,17 +487,14 @@ export default function DashboardPage() {
                       </button>
                       <ArrowRight size={16} className="text-gray-300 group-hover:text-green-500 transition-colors" />
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             )}
-          </motion.div>
+          </div>
 
           {/* Piece Jobs List */}
-          <motion.div
-            variants={item}
-            className={cn(cardVariants({ variant: "glass", padding: "lg" }))}
-          >
+          <div className={cn(cardVariants({ variant: "glass", padding: "lg" }))}>
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <Zap size={20} className="text-amber-600" />
@@ -666,7 +508,7 @@ export default function DashboardPage() {
             </div>
 
             {dashboard.gigs.length === 0 ? (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+              <div>
                 <EmptyState
                   icon={<Zap size={40} />}
                   title="No piece jobs yet"
@@ -682,23 +524,13 @@ export default function DashboardPage() {
                     </Button>
                   }
                 />
-              </motion.div>
+              </div>
             ) : (
               <div className="space-y-3">
                 {dashboard.gigs.map((gig, index) => (
-                  <motion.div
-                    key={gig.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    whileHover={{
-                      scale: 1.02,
-                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                      transition: { duration: 0.2 }
-                    }}
-                    className="group flex cursor-pointer items-center justify-between rounded-xl border border-gray-200 bg-white/50 p-4 transition-all hover:border-amber-200"
-                    onClick={() => router.push(`/gigs/${gig.id}`)}
-                  >
+                  <div key={gig.id}
+              className="group flex cursor-pointer items-center justify-between rounded-xl border border-gray-200 bg-white/50 p-4 transition-all hover:border-amber-200"
+              onClick={() => router.push(`/gigs/${gig.id}`)}>
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-amber-100 to-orange-200 text-amber-600 font-semibold">
                         {gig.title.charAt(0).toUpperCase()}
@@ -735,13 +567,13 @@ export default function DashboardPage() {
                       </button>
                       <ArrowRight size={16} className="text-gray-300 group-hover:text-amber-500 transition-colors" />
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             )}
-          </motion.div>
-        </motion.div>
-      </motion.div>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }

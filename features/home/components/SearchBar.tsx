@@ -6,6 +6,7 @@ import AddressAutocomplete, {
 } from "@/components/ui/AddressAutocomplete";
 import { useRoomSearchStore } from "@/features/rooms/store/room-search.store";
 import { quickFilters } from "@/features/home/constants/quick-filters.constants";
+import { ROOM_PRICE_RANGE_OPTIONS } from "@/features/rooms/constants/price-range.constants";
 
 export default function SearchBar() {
   const {
@@ -60,25 +61,11 @@ export default function SearchBar() {
               Any price
             </option>
 
-            <option value="0-2000">
-              R0 - R2,000
-            </option>
-
-            <option value="2000-4000">
-              R2,000 - R4,000
-            </option>
-
-            <option value="4000-6000">
-              R4,000 - R6,000
-            </option>
-
-            <option value="6000-10000">
-              R6,000 - R10,000
-            </option>
-
-            <option value="10000+">
-              R10,000+
-            </option>
+            {ROOM_PRICE_RANGE_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
           </select>
         </div>
 

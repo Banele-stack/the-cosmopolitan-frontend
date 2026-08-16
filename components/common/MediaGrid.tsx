@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { Play } from "lucide-react";
 
 export interface MediaGridItem {
@@ -12,6 +13,63 @@ interface MediaGridProps {
   media: MediaGridItem[];
   alt: string;
   fallbackUrl?: string;
+}
+
+// Autoplaying every card's video the moment the grid mounts is what was
+// actually causing the mobile stutter/freeze report — a page of 10-12 cards
+// could mean that many videos decoding simultaneously off-screen. This
+// gates loading AND playback behind IntersectionObserver: the <video> has
+// no src at all until it's actually scrolled into view (so it doesn't even
+// compete for bandwidth with the images that are visible), and it pauses
+// again once it scrolls back out.
+function LazyAutoplayVideo({
+  src,
+  className,
+}: {
+  src: string;
+  className?: string;
+}) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { rootMargin: "100px" },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    if (inView) {
+      // .play() returns a promise that rejects if the browser interrupts
+      // it (e.g. the tile leaves view again immediately) — swallow that,
+      // it's not an error worth surfacing.
+      el.play().catch(() => {});
+    } else {
+      el.pause();
+    }
+  }, [inView]);
+
+  return (
+    <video
+      ref={ref}
+      src={inView ? src : undefined}
+      className={className}
+      muted
+      loop
+      playsInline
+      preload="none"
+    />
+  );
 }
 
 // Fills its parent (the parent sets height, e.g. `relative h-60
@@ -34,19 +92,24 @@ export default function MediaGrid({ media, alt, fallbackUrl = "/placeholder.svg"
     return (
       <div key={i} className={`relative overflow-hidden bg-gray-100 ${extraClassName ?? ""}`}>
         {item.type === "video" ? (
-          <video
+          <LazyAutoplayVideo
             src={item.url}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            autoPlay
-            muted
-            loop
-            playsInline
           />
         ) : (
-          <img
+          // next/image handles resizing, WebP/AVIF conversion, and
+          // responsive srcset automatically — this is what actually fixes
+          // "photos take too long to load on a slow connection": the phone
+          // downloads a compressed image sized for this tile, not the
+          // original multi-MB upload. `fill` matches the parent tile,
+          // which is already `relative` + a fixed height from its grid.
+          <Image
             src={broken[i] ? fallbackUrl : item.url}
             alt={`${alt} ${i + 1}`}
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            loading="lazy"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
             onError={() => setBroken((prev) => ({ ...prev, [i]: true }))}
           />
         )}

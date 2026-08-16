@@ -13,14 +13,23 @@ export default function FormProgress({
   sections,
   accent = "from-green-500 to-emerald-600",
   containerClassName = "max-w-2xl",
+  // When given, this drives the bar directly — used by forms that now show
+  // one step at a time instead of one long scroll (see rooms/create and
+  // business/create). Omit it to keep the old scroll-spy behavior for any
+  // form that's still a single continuous page.
+  activeIndex: controlledIndex,
 }: {
   sections: Section[];
   accent?: string;
   containerClassName?: string;
+  activeIndex?: number;
 }) {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [scrollIndex, setScrollIndex] = useState(0);
+  const isControlled = controlledIndex !== undefined;
 
   useEffect(() => {
+    if (isControlled) return;
+
     const elements = sections
       .map((section) => document.getElementById(section.id))
       .filter((el): el is HTMLElement => el !== null);
@@ -33,7 +42,7 @@ export default function FormProgress({
           if (!entry.isIntersecting) return;
 
           const index = elements.indexOf(entry.target as HTMLElement);
-          if (index !== -1) setActiveIndex(index);
+          if (index !== -1) setScrollIndex(index);
         });
       },
       { rootMargin: "-15% 0px -70% 0px", threshold: 0 }
@@ -42,8 +51,9 @@ export default function FormProgress({
     elements.forEach((el) => observer.observe(el));
 
     return () => observer.disconnect();
-  }, [sections]);
+  }, [sections, isControlled]);
 
+  const activeIndex = isControlled ? controlledIndex : scrollIndex;
   const current = sections[activeIndex];
 
   return (

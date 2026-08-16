@@ -28,7 +28,20 @@ function SignupForm() {
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [socialLink, setSocialLink] = useState("");
+  const [tiktokUrl, setTiktokUrl] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Users paste links in every shape ("facebook.com/x", "www.linkedin.com/in/x",
+  // "https://..."). Only add a protocol when one's missing so we don't mangle
+  // an already-valid URL, and only bother once there's something to normalize.
+  const normalizeSocialLink = (link: string) => {
+    const trimmed = link.trim();
+
+    if (!trimmed) return undefined;
+
+    return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  };
 
   const formatPhoneNumber = (number: string) => {
     let cleaned = number.replace(/\D/g, "");
@@ -66,6 +79,8 @@ function SignupForm() {
       email: email.trim() || undefined,
       phoneNumber: formattedPhone,
       password,
+      socialLink: normalizeSocialLink(socialLink),
+      tiktokUrl: normalizeSocialLink(tiktokUrl),
     });
 
     toast.success("Account created successfully!");
@@ -91,12 +106,12 @@ if (onboarding.hasListings) {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gray-50 px-5">
-      {/* Background glow */}
-      <div className="absolute left-1/2 top-[-200px] h-[700px] w-[700px] -translate-x-1/2 animate-pulse rounded-full bg-gradient-to-r from-violet-400/20 via-blue-400/20 to-cyan-400/20 blur-[140px]" />
-
-      {/* Floating orbs */}
-      <div className="absolute left-6 top-24 h-28 w-28 animate-bounce rounded-full bg-violet-300/20 blur-3xl" />
-      <div className="absolute bottom-20 right-6 h-36 w-36 animate-pulse rounded-full bg-blue-300/20 blur-3xl" />
+      {/* Background glow — used to pulse/bounce forever, which reads as
+          "something's loading/wrong" to someone unfamiliar with app
+          conventions rather than decoration. Static now. */}
+      <div className="absolute left-1/2 top-[-200px] h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-gradient-to-r from-violet-400/20 via-blue-400/20 to-cyan-400/20 blur-[140px]" />
+      <div className="absolute left-6 top-24 h-28 w-28 rounded-full bg-violet-300/20 blur-3xl" />
+      <div className="absolute bottom-20 right-6 h-36 w-36 rounded-full bg-blue-300/20 blur-3xl" />
 
       <div className="relative z-10 w-full max-w-sm text-center">
         {/* Without this, arriving here (e.g. via a "sign in to continue"
@@ -185,6 +200,36 @@ if (onboarding.hasListings) {
           <p className="-mt-1 ml-2 text-xs text-gray-500">
             Phone numbers may be entered with or without the leading 0.
           </p>
+
+          {/* Social links (both optional, both separate) — kept as two
+              fields rather than one shared slot because a lot of owners
+              run both a Facebook presence and a TikTok one, and forcing a
+              choice between them meant one always got left off. Whatever's
+              set here follows the account onto every listing/room it
+              creates (see ownerSocialUrl/ownerTiktokUrl on Room/Business/
+              Gig), so it's worth the extra field. */}
+          <p className="ml-2 text-xs text-gray-500">
+            Advertise on Facebook or TikTok? Add that page's link below —
+            not just your personal profile.
+          </p>
+
+          <input
+            type="text"
+            placeholder="Facebook or LinkedIn link (optional)"
+            value={socialLink}
+            onChange={(e) => setSocialLink(e.target.value)}
+            autoComplete="url"
+            className="w-full rounded-full border border-white/40 bg-white/60 px-4 py-3 text-sm text-gray-700 outline-none backdrop-blur transition focus:border-violet-400"
+          />
+
+          <input
+            type="text"
+            placeholder="TikTok link (optional)"
+            value={tiktokUrl}
+            onChange={(e) => setTiktokUrl(e.target.value)}
+            autoComplete="url"
+            className="w-full rounded-full border border-white/40 bg-white/60 px-4 py-3 text-sm text-gray-700 outline-none backdrop-blur transition focus:border-violet-400"
+          />
 
           {/* Password */}
           <input

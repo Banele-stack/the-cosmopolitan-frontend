@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import Script from "next/script";
 import { Toaster } from "sonner";
 import HelpWidget from "@/components/common/HelpWidget";
+import ScrollRestorationManager from "@/components/common/ScrollRestorationManager";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -39,9 +40,10 @@ export default function RootLayout({
       </head>
 
       <body className="bg-white text-black antialiased">
+        <ScrollRestorationManager />
         {children}
-         <Toaster richColors position="top-right" />
-         <HelpWidget />
+        <Toaster richColors position="top-right" />
+        <HelpWidget />
       </body>
     </html>
   );

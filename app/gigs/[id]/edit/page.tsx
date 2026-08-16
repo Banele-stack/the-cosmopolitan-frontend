@@ -405,10 +405,13 @@ export default function EditGigPage() {
               }
               placeholder="Street, suburb..."
               inputClassName="w-full h-12 pl-10 pr-4 rounded-xl bg-white border border-gray-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-100 outline-none text-sm"
+              showUseCurrentLocation
             />
 
             <p className="mt-2 text-xs text-gray-400">
-              Drag the pin to fine-tune the exact spot.
+              Easiest: tap &quot;Use my current location&quot; above while
+              you&apos;re there. Or drag the pin below to fine-tune the exact
+              spot.
             </p>
 
             <LocationPinPicker

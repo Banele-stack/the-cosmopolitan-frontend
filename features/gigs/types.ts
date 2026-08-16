@@ -29,6 +29,8 @@ export interface Gig {
   createdAt: string;
   ownerId?: number;
   ownerVerified?: boolean;
+  ownerTiktokUrl?: string;
+  ownerSocialUrl?: string;
   viewCount?: number;
   contactClickCount?: number;
 }

@@ -6,8 +6,10 @@ import { KeyRound } from "lucide-react";
 export default function ForgotPasswordPage() {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gray-50 px-5">
-      {/* Background glow */}
-      <div className="absolute left-1/2 top-[-200px] h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-gradient-to-r from-blue-400/20 via-violet-400/20 to-cyan-400/20 blur-[140px] animate-pulse" />
+      {/* Background glow — used to pulse forever, which reads as
+          "something's loading/wrong" to someone unfamiliar with app
+          conventions rather than decoration. Static now. */}
+      <div className="absolute left-1/2 top-[-200px] h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-gradient-to-r from-blue-400/20 via-violet-400/20 to-cyan-400/20 blur-[140px]" />
 
       <div className="relative z-10 w-full max-w-sm text-center">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-r from-violet-500 to-blue-500 shadow-lg">

@@ -25,6 +25,7 @@ import { useBusinessSearchStore } from "@/features/business/store/business-searc
 import { useGigSearchStore } from "@/features/gigs/store/gig-search.store";
 import { useAutoDetectLocation } from "@/lib/hooks/useAutoDetectLocation";
 import { formatNearbyLabel } from "@/lib/format-nearby-label";
+import { formatCategoryHeading } from "@/lib/format-listing-heading";
 
 type ViewMode = "rooms" | "businesses" | "gigs" | "askAi";
 
@@ -72,6 +73,8 @@ export default function Home() {
   lng,
   categorySlug,
   subcategorySlug,
+  categoryName,
+  subcategoryName,
   search,
   openNow,
   deliveryAvailable,
@@ -89,6 +92,8 @@ const {
   type: gigType,
   categorySlug: gigCategorySlug,
   subcategorySlug: gigSubcategorySlug,
+  categoryName: gigCategoryName,
+  subcategoryName: gigSubcategoryName,
   urgency: gigUrgency,
   searchTrigger: gigSearchTrigger,
 } = useGigSearchStore();
@@ -125,10 +130,25 @@ useEffect(() => {
 }, [view, router]);
 
 // Switching tabs should always land at the top of the new tab's content,
-// not wherever the previous tab happened to be scrolled to.
+// not wherever the previous tab happened to be scrolled to. Also covers
+// arriving here via the browser's Back button (e.g. from a listing detail
+// page): that remounts this component fresh, `view` goes from its
+// "rooms" default to whatever the URL says, and this same effect fires —
+// with ScrollRestorationManager turning off the browser's own automatic
+// scroll restoration, this explicit reset is what actually decides where
+// the page lands, instead of racing an unpredictable native restore.
 useEffect(() => {
   window.scrollTo(0, 0);
 }, [view]);
+
+// Belt-and-braces: guarantees a top-of-page landing on the very first
+// mount regardless of whether the effect above happens to fire (it only
+// fires on `view` *changing* — if the URL's ?view= already matches the
+// default "rooms" state, setView() is a no-op and that effect never
+// runs).
+useEffect(() => {
+  window.scrollTo(0, 0);
+}, []);
 
   // Reset to the first page whenever the search criteria change.
   // Adjusting state during render (rather than in an effect) avoids the
@@ -301,7 +321,12 @@ useEffect(() => {
             <div>
               <div className="mb-8">
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-                  Local Businesses
+                  {formatCategoryHeading(
+                    "Local Businesses",
+                    "Businesses",
+                    categoryName,
+                    subcategoryName
+                  )}
                 </h1>
 
                 <p className="text-gray-500 mt-2">
@@ -349,7 +374,12 @@ useEffect(() => {
               <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-                    Piece Jobs
+                    {formatCategoryHeading(
+                      "Piece Jobs",
+                      "Piece Jobs",
+                      gigCategoryName,
+                      gigSubcategoryName
+                    )}
                   </h1>
 
                   <p className="text-gray-500 mt-2">

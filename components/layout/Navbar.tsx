@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Plus, User, Home, Building2, HandHelping, Sparkles } from "lucide-react";
+import { Plus, User, Home, Building2, HandHelping } from "lucide-react";
+import AIOrb from "@/components/common/AIOrb";
 
 type ViewMode = "rooms" | "businesses" | "gigs" | "askAi";
 
@@ -35,23 +36,33 @@ export default function Navbar({ view, onNavigate }: NavbarProps) {
     router.push(`/?view=${v}`);
   };
 
-  const navItems: { label: string; value: ViewMode; icon: typeof Home }[] = [
+  // icon is omitted for "askAi" — that tab renders the animated AIOrb
+  // instead of a static lucide icon (see the map below).
+  const navItems: { label: string; value: ViewMode; icon?: typeof Home }[] = [
     { label: "Properties", value: "rooms", icon: Home },
     { label: "Businesses", value: "businesses", icon: Building2 },
     { label: "Piece Jobs", value: "gigs", icon: HandHelping },
-    { label: "Ask AI", value: "askAi", icon: Sparkles },
+    // Was "Ask AI" — "AI" is comfortable shorthand for us, but it can read
+    // as intimidating or meaningless jargon to someone who's never
+    // encountered the term. "Just Ask" describes the action instead of
+    // naming the technology, and still fits the tab bar's tight width.
+    { label: "Just Ask", value: "askAi" },
   ];
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur border-b">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+      {/* px-3/gap-2 on mobile, widening at sm — at the full desktop sizing,
+          the logo (110px) plus Add Service + Account add up to more than a
+          375px phone fits. Measured against the actual rendered widths,
+          not guessed. */}
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-3 py-3 sm:gap-3 sm:px-4">
         <Link href="/" className="shrink-0">
           <Image
             src="/CosmoBusinesses.png"
             alt="Cosmo"
             width={110}
-            height={110}
-            className="rounded-md"
+            height={44}
+            className="h-9 w-auto rounded-md sm:h-11"
           />
         </Link>
 
@@ -67,42 +78,42 @@ export default function Navbar({ view, onNavigate }: NavbarProps) {
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
-              <Icon
-                size={15}
-                className={
-                  value === "askAi" && !isActive(value)
-                    ? "text-amber-400"
-                    : ""
-                }
-              />
+              {Icon ? <Icon size={15} /> : <AIOrb size={15} />}
               {label}
             </button>
           ))}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           {isLoggedIn && (
   <Link
     href="/dashboard"
     data-tour="add-listing"
-    className="rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-semibold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg active:scale-95"
+    aria-label="Add Service"
+    // Full label at sm+; icon-only on a phone-width screen — with the
+    // logo and the (deliberately always-labelled, see below) Account
+    // button both in this same row, there isn't room for two full text
+    // buttons on a real 375px phone.
+    className="flex h-11 items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-3 text-sm font-semibold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg active:scale-95 sm:px-4"
   >
-    Add Service
+    <Plus size={18} className="sm:hidden" />
+    <span className="hidden sm:inline">Add Service</span>
   </Link>
 )}
 
+          {/* Used to be an unlabeled icon (plus a permanent sparkle/nudge
+              animation loop) — the only way to sign up or reach your
+              account, with no word anywhere saying what it does. A visible
+              label matters more here than almost anywhere else in the app
+              — unlike the buttons above, this one keeps its text at every
+              width rather than collapsing to icon-only on mobile. */}
           <Link
             href={isLoggedIn ? "/auth/account" : "/auth"}
             data-tour={!isLoggedIn ? "add-listing" : undefined}
-            className="star-burst nudge-loop float relative flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-r from-violet-500 to-blue-500 text-white shadow-lg transition-all hover:scale-105 active:scale-90"
+            className="flex h-11 shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-violet-500 to-blue-500 pl-3 pr-4 text-sm font-semibold text-white shadow-lg transition-all hover:scale-105 active:scale-90"
           >
-            {isLoggedIn ? <User size={20} /> : <Plus size={20} />}
-
-            <span className="star star-1" />
-            <span className="star star-2" />
-            <span className="star star-3" />
-            <span className="star star-4" />
-            <span className="star star-5" />
+            {isLoggedIn ? <User size={18} /> : <Plus size={18} />}
+            {isLoggedIn ? "Account" : "Sign Up"}
           </Link>
         </div>
       </div>

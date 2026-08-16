@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { MapPin, MessageCircle, BadgeCheck, Clock } from "lucide-react";
 import { Gig } from "@/features/gigs/types";
 import { getCategoryIcon } from "@/features/business/utils/category-icons";
@@ -36,14 +35,12 @@ export default function GigCard({
   const Icon = gig.category ? getCategoryIcon(gig.category.slug) : Clock;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
-    >
       <Link href={`/gigs/${gig.id}`}>
-        <div className="group bg-white/80 backdrop-blur-xl rounded-2xl p-5 border border-white/50 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+        {/* backdrop-blur-xl removed: it's one of the most GPU-expensive CSS
+            effects, and repeating it across every card in a scrolling grid
+            was a real mobile stutter cause — bg-white/95 keeps the same
+            near-opaque look without the per-frame blur compositing cost. */}
+        <div className="group bg-white/95 rounded-2xl p-5 border border-white/50 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
           <div className="flex items-center justify-between gap-2">
             <Badge tone={gig.type === "need_help" ? "violet" : "emerald"}>
               {gig.type === "need_help" ? "Need Help" : "Available to Help"}
@@ -97,6 +94,5 @@ export default function GigCard({
           </div>
         </div>
       </Link>
-    </motion.div>
   );
 }

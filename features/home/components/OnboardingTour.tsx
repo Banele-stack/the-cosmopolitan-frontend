@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { X, Home, Building2, HandHelping, Sparkles } from "lucide-react";
 
 type ViewMode = "rooms" | "businesses" | "gigs" | "askAi";
@@ -21,7 +20,7 @@ const SECTION: Record<ViewMode, { label: string; icon: typeof Home }> = {
   rooms: { label: "Properties", icon: Home },
   businesses: { label: "Businesses", icon: Building2 },
   gigs: { label: "Piece Jobs", icon: HandHelping },
-  askAi: { label: "Ask AI", icon: Sparkles },
+  askAi: { label: "Just Ask", icon: Sparkles },
 };
 
 interface Step {
@@ -299,32 +298,26 @@ export default function OnboardingTour({ view, setView, onActiveChange }: Onboar
     <div className="fixed inset-0 z-[200]" onClick={next}>
       {/* Dimmed backdrop with a cut-out ring around the target — a giant
           box-shadow on the ring itself is what creates the "spotlight"
-          without needing an SVG mask. */}
-      <AnimatePresence>
-        {rect && (
-          <motion.div
-            key={`${stepIndex}-ring`}
-            initial={false}
-            animate={{
-              top: rect.top - MARGIN,
-              left: rect.left - MARGIN,
-              width: rect.width + MARGIN * 2,
-              height: rect.height + MARGIN * 2,
-            }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed rounded-2xl"
-            style={{
-              // A single box-shadow doing two jobs: a huge spread dims
-              // everything outside this rect (the "spotlight" cutout),
-              // and a tight second shadow draws the ring around it — an
-              // inline style clobbers Tailwind's ring-* box-shadow classes
-              // entirely, so both have to live in this one declaration.
-              boxShadow:
-                "0 0 0 9999px rgba(10,10,15,0.65), 0 0 0 2px rgba(255,255,255,0.85)",
-            }}
-          />
-        )}
-      </AnimatePresence>
+          without needing an SVG mask. Jumps straight to each target's
+          position rather than animating the move. */}
+      {rect && (
+        <div
+          className="fixed rounded-2xl"
+          style={{
+            top: rect.top - MARGIN,
+            left: rect.left - MARGIN,
+            width: rect.width + MARGIN * 2,
+            height: rect.height + MARGIN * 2,
+            // A single box-shadow doing two jobs: a huge spread dims
+            // everything outside this rect (the "spotlight" cutout),
+            // and a tight second shadow draws the ring around it — an
+            // inline style clobbers Tailwind's ring-* box-shadow classes
+            // entirely, so both have to live in this one declaration.
+            boxShadow:
+              "0 0 0 9999px rgba(10,10,15,0.65), 0 0 0 2px rgba(255,255,255,0.85)",
+          }}
+        />
+      )}
 
       {!rect && (
         <div
@@ -334,23 +327,11 @@ export default function OnboardingTour({ view, setView, onActiveChange }: Onboar
       )}
 
       <div style={wrapperStyle}>
-        {/* Plain AnimatePresence (not mode="wait"): the old card's exit and
-            the new card's enter run concurrently rather than sequenced.
-            mode="wait" holds the outgoing element mounted until its exit
-            animation finishes — on a throttled/backgrounded tab (or just a
-            slow device) that animation can stall, which would leave the
-            *old* step's text on screen indefinitely while state has moved
-            on. A concurrent crossfade has no such dependency. */}
-        <AnimatePresence>
-          <motion.div
-            key={stepIndex}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.18 }}
-            onClick={(e) => e.stopPropagation()}
-            className="pointer-events-auto rounded-2xl bg-white p-4 shadow-2xl"
-          >
+        <div
+          key={stepIndex}
+          onClick={(e) => e.stopPropagation()}
+          className="pointer-events-auto rounded-2xl bg-white p-4 shadow-2xl"
+        >
             <div className="flex items-start justify-between gap-2">
               <div className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-600">
                 <section.icon size={11} />
@@ -405,8 +386,7 @@ export default function OnboardingTour({ view, setView, onActiveChange }: Onboar
                 </button>
               </div>
             </div>
-          </motion.div>
-        </AnimatePresence>
+        </div>
       </div>
     </div>
   );

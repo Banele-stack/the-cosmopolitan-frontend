@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Home, Building2, HandHelping, Sparkles } from "lucide-react";
+import { Home, Building2, HandHelping } from "lucide-react";
+import AIOrb from "@/components/common/AIOrb";
 
 type ViewMode = "rooms" | "businesses" | "gigs" | "askAi";
 
@@ -20,35 +20,17 @@ interface MobileTabsProps {
   tourActive?: boolean;
 }
 
+
 export default function MobileTabs({
   view,
   setView,
   onAskAI,
   tourActive,
 }: MobileTabsProps) {
-  const [visible, setVisible] = useState(true);
-
-  useEffect(() => {
-    let lastScrollY = window.scrollY;
-
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-
-      if (currentScrollY < 20) {
-        setVisible(true);
-      } else if (currentScrollY > lastScrollY) {
-        setVisible(false);
-      } else {
-        setVisible(true);
-      }
-
-      lastScrollY = currentScrollY;
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // This bar used to hide itself on scroll-down "to save space" — but for
+  // someone who doesn't already know that's a common app pattern, the only
+  // navigation on screen silently disappearing reads as "the app broke,"
+  // not "more room for content." It stays put now.
 
   const tabClass = (tabView: ViewMode) => {
     const isActive = view === tabView;
@@ -65,49 +47,42 @@ export default function MobileTabs({
   };
 
   return (
-    <div
-      className={`md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-lg transition-transform duration-300 ${
-        visible || tourActive ? "translate-y-0" : "translate-y-full"
-      }`}
-    >
-      <div data-tour="content-tabs" className="flex h-14 gap-1 px-1 py-1">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-lg">
+      <div data-tour="content-tabs" className="flex h-16 gap-1 px-1 py-1">
         <button
           onClick={() => setView("rooms")}
-          className={`flex-1 flex flex-col items-center justify-center rounded-xl transition active:scale-95 ${tabClass("rooms")}`}
+          className={`flex-1 flex flex-col items-center justify-center gap-0.5 rounded-xl transition active:scale-95 ${tabClass("rooms")}`}
         >
-          <Home size={18} />
-          <span className="mt-0.5 text-[10px] font-medium">Properties</span>
+          <Home size={20} />
+          <span className="text-[12px] font-medium">Properties</span>
         </button>
 
         <button
           onClick={() => setView("businesses")}
-          className={`flex-1 flex flex-col items-center justify-center rounded-xl transition active:scale-95 ${tabClass("businesses")}`}
+          className={`flex-1 flex flex-col items-center justify-center gap-0.5 rounded-xl transition active:scale-95 ${tabClass("businesses")}`}
         >
-          <Building2 size={18} />
-          <span className="mt-0.5 text-[10px] font-medium text-center leading-tight">
+          <Building2 size={20} />
+          <span className="text-[12px] font-medium text-center leading-tight">
             Local Businesses
           </span>
         </button>
 
         <button
           onClick={() => setView("gigs")}
-          className={`flex-1 flex flex-col items-center justify-center rounded-xl transition active:scale-95 ${tabClass("gigs")}`}
+          className={`flex-1 flex flex-col items-center justify-center gap-0.5 rounded-xl transition active:scale-95 ${tabClass("gigs")}`}
         >
-          <HandHelping size={18} />
-          <span className="mt-0.5 text-[10px] font-medium whitespace-nowrap">Piece Jobs</span>
+          <HandHelping size={20} />
+          <span className="text-[12px] font-medium whitespace-nowrap">Piece Jobs</span>
         </button>
 
         <button
   onClick={() => setView("askAi")}
   data-tour="ask-ai"
-  className={`flex-1 flex flex-col items-center justify-center rounded-xl transition active:scale-95 ${tabClass("askAi")}`}
+  className={`flex-1 flex flex-col items-center justify-center gap-0.5 rounded-xl transition active:scale-95 ${tabClass("askAi")}`}
 >
-  <Sparkles
-    size={18}
-    className={view === "askAi" && tourActive ? "" : "animate-twinkle text-amber-500"}
-  />
-  <span className="mt-0.5 text-[10px] font-medium">
-    Ask AI
+  <AIOrb size={20} />
+  <span className="text-[12px] font-medium">
+    Just Ask
   </span>
 </button>
       </div>

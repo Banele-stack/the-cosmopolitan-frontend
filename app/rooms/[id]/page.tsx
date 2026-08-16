@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { use, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   ArrowLeft,
   MapPin,
@@ -38,6 +39,9 @@ import { getRoom, deleteRoom } from "@/features/rooms/services/room.service";
 import { getProfile } from "@/features/auth/services/auth.service";
 import ReportModal from "@/features/reports/components/ReportModal";
 import ListingStats from "@/components/common/ListingStats";
+import TikTokFollow from "@/components/common/TikTokFollow";
+import SocialLinkButton from "@/components/common/SocialLinkButton";
+import ShareButton from "@/components/common/ShareButton";
 import Button, { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { recordView, recordContactClick } from "@/features/analytics/services/analytics.service";
@@ -83,6 +87,14 @@ export default function RoomPage({
   const [isOwner, setIsOwner] = useState(false);
   const [ownerCheckDone, setOwnerCheckDone] = useState(false);
 
+  // With the browser's own scroll restoration turned off app-wide (see
+  // ScrollRestorationManager), every page has to explicitly decide where
+  // it starts — this keeps two different room listings visited back to
+  // back from inheriting whatever scroll depth the previous one left.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
+
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((pos) => {
@@ -93,7 +105,7 @@ export default function RoomPage({
       });
     }
   }, []);
-  
+
   useEffect(() => {
     const fetchRoom = async () => {
       try {
@@ -252,27 +264,45 @@ export default function RoomPage({
 
       <div className="max-w-5xl mx-auto px-4 py-4 md:py-6">
 
-        {/* BACK */}
-        <button
-          onClick={() => window.history.back()}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-black mb-4"
-        >
-          <ArrowLeft size={16} />
-          Back
-        </button>
+        {/* BACK + SHARE */}
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={() => window.history.back()}
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-black"
+          >
+            <ArrowLeft size={16} />
+            Back
+          </button>
+
+          <ShareButton
+            title={room.name}
+            text={`Check out this room on The Cosmopolitan: ${room.name}`}
+          />
+        </div>
 
         {/* IMAGE */}
         {/* GALLERY */}
         <div className="bg-white rounded-2xl p-2 shadow-sm">
           <div className="relative">
 
-            <img
-              src={processedImages[selectedImage]}
-              alt={room.name}
+            <div
+              className="relative h-[250px] sm:h-[350px] md:h-[500px] w-full overflow-hidden rounded-xl cursor-pointer"
               onClick={() => setGalleryOpen(true)}
-              onError={onImgError}
-              className="w-full h-[250px] sm:h-[350px] md:h-[500px] object-cover rounded-xl cursor-pointer"
-            />
+            >
+              {/* next/image: automatic resize + WebP/AVIF + responsive
+                  srcset, so a phone downloads a copy sized for this box
+                  instead of the original upload (up to 5MB). `priority`,
+                  not lazy — this is the page's LCP element. */}
+              <Image
+                src={processedImages[selectedImage] || "/placeholder.svg"}
+                alt={room.name}
+                fill
+                sizes="(max-width: 768px) 100vw, 768px"
+                priority
+                onError={onImgError}
+                className="object-cover"
+              />
+            </div>
 
             {room.images.length > 1 && (
               <>
@@ -317,10 +347,13 @@ export default function RoomPage({
                     : "border-transparent"
                 }`}
               >
-                <img
-                  src={image}
+                <Image
+                  src={image || "/placeholder.svg"}
                   alt={`${room.name}-${index}`}
                   onError={onImgError}
+                  loading="lazy"
+                  width={96}
+                  height={80}
                   className="w-24 h-20 object-cover"
                 />
               </button>
@@ -366,6 +399,14 @@ export default function RoomPage({
                   Phone Verified
                 </div>
               )}
+            </div>
+
+            {/* Sidebar (desktop) hides on mobile, so this is the only place
+                mobile sees it — the fixed bottom bar below is reserved for
+                Call/WhatsApp/Edit and is too tight to fit a 4th action. */}
+            <div className="lg:hidden">
+              <TikTokFollow url={room.ownerTiktokUrl} />
+              <SocialLinkButton url={room.ownerSocialUrl} />
             </div>
 
             {isOwner && (
@@ -652,6 +693,9 @@ export default function RoomPage({
                 </a>
               )}
 
+              <TikTokFollow url={room.ownerTiktokUrl} />
+              <SocialLinkButton url={room.ownerSocialUrl} />
+
               {isOwner ? (
                 <div className="mt-4 flex gap-2">
                   <Button
@@ -784,7 +828,7 @@ export default function RoomPage({
       {/* GALLERY MODAL */}
       {galleryOpen && (
         <div className="fixed inset-0 z-[100] bg-black">
-          
+
           <button
             onClick={() => setGalleryOpen(false)}
             className="absolute top-4 right-4 text-white text-4xl z-10"

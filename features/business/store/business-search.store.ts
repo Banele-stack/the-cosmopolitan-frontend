@@ -10,6 +10,12 @@ interface BusinessSearchStore {
   categorySlug: string;
   subcategorySlug: string;
 
+  // Display names for the slugs above — kept alongside them so the
+  // "{Category} Businesses" heading (see formatCategoryHeading) doesn't
+  // need its own category fetch just to turn a slug back into a label.
+  categoryName: string;
+  subcategoryName: string;
+
   search: string;
 
   openNow: boolean;
@@ -25,9 +31,12 @@ interface BusinessSearchStore {
 
   setCoordinates: (lat: number, lng: number) => void;
 
-  setCategorySlug: (categorySlug: string) => void;
+  setCategorySlug: (categorySlug: string, categoryName?: string) => void;
 
-  setSubcategorySlug: (subcategorySlug: string) => void;
+  setSubcategorySlug: (
+    subcategorySlug: string,
+    subcategoryName?: string
+  ) => void;
 
   setSearch: (search: string) => void;
 
@@ -54,6 +63,8 @@ export const useBusinessSearchStore =
 
     categorySlug: "",
     subcategorySlug: "",
+    categoryName: "",
+    subcategoryName: "",
 
     search: "",
 
@@ -74,15 +85,18 @@ export const useBusinessSearchStore =
         lng,
       }),
 
-    setCategorySlug: (categorySlug) =>
+    setCategorySlug: (categorySlug, categoryName = "") =>
       set({
         categorySlug,
+        categoryName,
         // Selecting a new top-level category invalidates whatever
         // subcategory was previously chosen under the old category.
         subcategorySlug: "",
+        subcategoryName: "",
       }),
 
-    setSubcategorySlug: (subcategorySlug) => set({ subcategorySlug }),
+    setSubcategorySlug: (subcategorySlug, subcategoryName = "") =>
+      set({ subcategorySlug, subcategoryName }),
 
     setSearch: (search) => set({ search }),
 
@@ -115,6 +129,8 @@ export const useBusinessSearchStore =
         location: "",
         categorySlug: "",
         subcategorySlug: "",
+        categoryName: "",
+        subcategoryName: "",
         search: "",
         openNow: false,
         deliveryAvailable: false,

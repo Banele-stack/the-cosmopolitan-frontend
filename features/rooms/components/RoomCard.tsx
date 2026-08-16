@@ -114,7 +114,11 @@ export default function RoomCard({
 
   return (
     <Link href={`/rooms/${room.id}`}>
-      <div className="group bg-white/80 backdrop-blur-xl rounded-3xl overflow-hidden border border-white/50 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
+      {/* backdrop-blur-xl removed: it's one of the most GPU-expensive CSS
+          effects, and repeating it across every card in a scrolling grid
+          was a real mobile stutter cause — bg-white/95 keeps the same
+          near-opaque look without the per-frame blur compositing cost. */}
+      <div className="group bg-white/95 rounded-3xl overflow-hidden border border-white/50 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
 
 {/* MEDIA GRID — layout adapts to how many photos/videos there
     actually are, instead of always reserving 4 cells. */}

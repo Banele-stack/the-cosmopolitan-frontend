@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LayoutGrid, X } from "lucide-react";
+import { LayoutGrid, X, ChevronDown, ChevronUp } from "lucide-react";
 import AddressAutocomplete, {
   GeocodeResult,
 } from "@/components/ui/AddressAutocomplete";
@@ -16,6 +16,12 @@ const URGENCY_OPTIONS: { value: GigUrgency; label: string }[] = [
   { value: "this_week", label: "This Week" },
   { value: "flexible", label: "Flexible" },
 ];
+
+// Mirrors BusinessSearchPanel's category collapse — same underlying
+// category list (Events/Beauty/Food-first, see business-category.seed.ts),
+// so it gets the same "just the highlights, rest behind More" treatment
+// instead of the full 17-skill wall this used to render unconditionally.
+const VISIBLE_CATEGORY_COUNT = 3;
 
 export default function GigSearchPanel() {
   const {
@@ -35,6 +41,7 @@ export default function GigSearchPanel() {
   } = useGigSearchStore();
 
   const [categories, setCategories] = useState<BusinessCategory[]>([]);
+  const [showAllCategories, setShowAllCategories] = useState(false);
 
   useEffect(() => {
     getBusinessCategories()
@@ -43,6 +50,23 @@ export default function GigSearchPanel() {
   }, []);
 
   const activeCategory = categories.find((c) => c.slug === categorySlug);
+
+  // If a category is picked from the "hidden" overflow, keep the list
+  // expanded so its pill (and subcategories) stay visible and selectable.
+  const isActiveCategoryHidden =
+    activeCategory != null &&
+    categories.findIndex((c) => c.slug === categorySlug) >=
+      VISIBLE_CATEGORY_COUNT;
+
+  const visibleCategories =
+    showAllCategories || isActiveCategoryHidden
+      ? categories
+      : categories.slice(0, VISIBLE_CATEGORY_COUNT);
+
+  const hiddenCategoryCount = Math.max(
+    0,
+    categories.length - VISIBLE_CATEGORY_COUNT,
+  );
 
   const hasActiveFilters =
     Boolean(location) ||
@@ -144,7 +168,7 @@ export default function GigSearchPanel() {
           </div>
 
           <div className="flex items-center gap-2 overflow-x-auto md:flex-wrap md:overflow-visible snap-x snap-mandatory md:snap-none no-scrollbar scroll-smooth py-0.5">
-            {categories.map((category) => {
+            {visibleCategories.map((category) => {
               const active = category.slug === categorySlug;
               const Icon = getCategoryIcon(category.slug);
 
@@ -152,7 +176,12 @@ export default function GigSearchPanel() {
                 <button
                   key={category.id}
                   type="button"
-                  onClick={() => setCategorySlug(active ? "" : category.slug)}
+                  onClick={() =>
+                    setCategorySlug(
+                      active ? "" : category.slug,
+                      active ? "" : category.name
+                    )
+                  }
                   className={`flex flex-shrink-0 snap-start items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-300 active:scale-95 ${
                     active
                       ? "bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-lg shadow-violet-500/30"
@@ -167,6 +196,26 @@ export default function GigSearchPanel() {
                 </button>
               );
             })}
+
+            {hiddenCategoryCount > 0 && !isActiveCategoryHidden && (
+              <button
+                type="button"
+                onClick={() => setShowAllCategories((v) => !v)}
+                className="flex flex-shrink-0 snap-start items-center gap-1 px-4 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap text-gray-500 border border-dashed border-gray-300 hover:border-violet-300 hover:text-violet-600 transition-all"
+              >
+                {showAllCategories ? (
+                  <>
+                    <ChevronUp size={15} />
+                    Show less
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown size={15} />
+                    {hiddenCategoryCount} more
+                  </>
+                )}
+              </button>
+            )}
           </div>
 
           {activeCategory && activeCategory.subcategories.length > 0 && (
@@ -179,7 +228,10 @@ export default function GigSearchPanel() {
                     key={subcategory.id}
                     type="button"
                     onClick={() =>
-                      setSubcategorySlug(active ? "" : subcategory.slug)
+                      setSubcategorySlug(
+                        active ? "" : subcategory.slug,
+                        active ? "" : subcategory.name
+                      )
                     }
                     className={`flex-shrink-0 snap-start px-3.5 py-2 rounded-full text-xs font-medium whitespace-nowrap transition ${
                       active

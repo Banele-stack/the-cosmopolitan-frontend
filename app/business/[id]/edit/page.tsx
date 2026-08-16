@@ -17,7 +17,6 @@ import {
   MessageCircle,
   Phone,
 } from "lucide-react";
-import { motion } from "framer-motion";
 import FormProgress from "@/components/ui/FormProgress";
 import AuthGate from "@/components/ui/AuthGate";
 import AddressAutocomplete, {
@@ -405,29 +404,6 @@ export default function EditBusinessPage() {
     }
   };
 
-  const container = {
-    hidden: {},
-    show: {
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const item = {
-    hidden: {
-      opacity: 0,
-      y: 25,
-    },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5,
-      },
-    },
-  };
-
   const FORM_SECTIONS = [
     { id: "section-type", label: "Business Type" },
     { id: "section-details", label: "Business Details" },
@@ -481,35 +457,18 @@ export default function EditBusinessPage() {
 
       <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-indigo-300/20 blur-3xl" />
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="relative mx-auto max-w-xl"
-      >
-        <motion.div
-          variants={item}
-          className="rounded-3xl border border-white/40 bg-white/70 p-8 shadow-2xl backdrop-blur-xl"
-        >
+      <div className="relative mx-auto max-w-xl">
+        <div className="rounded-3xl border border-white/40 bg-white/70 p-8 shadow-2xl backdrop-blur-xl">
           {/* Header */}
 
           <div className="mb-8 text-center">
 
-            <motion.div
-              animate={{
-                y: [0, -6, 0],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-              }}
-              className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 shadow-xl"
-            >
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 shadow-xl">
               <Building2
                 size={30}
                 className="text-white"
               />
-            </motion.div>
+            </div>
 
             <h1 className="text-3xl font-bold text-gray-900">
               Edit Business
@@ -520,13 +479,9 @@ export default function EditBusinessPage() {
             </p>
           </div>
 
-          <motion.form
-            variants={container}
-            onSubmit={handleSubmit}
-            className="space-y-5"
-          >
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* Business Type */}
-            <motion.div id="section-type" variants={item}>
+            <div id="section-type">
               <label className="mb-2 block text-sm font-semibold text-gray-700">
                 Business Type
               </label>
@@ -564,9 +519,9 @@ export default function EditBusinessPage() {
                   ? "Has a physical address, appears in nearby searches."
                   : "No physical address needed. Won't appear in nearby searches, but is still searchable and browsable by category."}
               </p>
-            </motion.div>
+            </div>
 
-            <motion.div id="section-details" variants={item}>
+            <div id="section-details">
               <label className="mb-2 block text-sm font-semibold text-gray-700">
                 Business Name <span className="text-red-500">*</span>
               </label>
@@ -579,9 +534,9 @@ export default function EditBusinessPage() {
                 placeholder="e.g. Sunrise Hotel"
                 className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 outline-none"
               />
-            </motion.div>
+            </div>
 
-            <motion.div variants={item}>
+            <div>
               <label className="mb-2 block text-sm font-semibold text-gray-700">
                 Qualification / Credential{" "}
                 <span className="font-normal text-gray-400">(optional)</span>
@@ -601,9 +556,9 @@ export default function EditBusinessPage() {
                 you're offering? Show it here — it's shown as a badge on
                 your listing.
               </p>
-            </motion.div>
+            </div>
 
-            <motion.div variants={item}>
+            <div>
               <label className="mb-2 block text-sm font-semibold text-gray-700">
                 Category <span className="text-red-500">*</span>
               </label>
@@ -622,10 +577,10 @@ export default function EditBusinessPage() {
                   </option>
                 ))}
               </select>
-            </motion.div>
+            </div>
 
             {activeCategory && activeCategory.subcategories.length > 0 && (
-              <motion.div variants={item}>
+              <div>
                 <label className="mb-2 block text-sm font-semibold text-gray-700">
                   Subcategory
                 </label>
@@ -643,10 +598,10 @@ export default function EditBusinessPage() {
                     </option>
                   ))}
                 </select>
-              </motion.div>
+              </div>
             )}
 
-            <motion.div variants={item}>
+            <div>
               <label className="mb-2 block text-sm font-semibold text-gray-700">
                 Description <span className="text-red-500">*</span>
               </label>
@@ -660,10 +615,10 @@ export default function EditBusinessPage() {
                 placeholder="Tell customers about your business..."
                 className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 outline-none"
               />
-            </motion.div>
+            </div>
 
             {/* Image Upload Section */}
-            <motion.div id="section-media" variants={item}>
+            <div id="section-media">
               <label className="mb-2 block text-sm font-semibold text-gray-700">
                 <div className="flex items-center gap-2">
                   <Image size={16} className="text-blue-600" />
@@ -767,10 +722,10 @@ export default function EditBusinessPage() {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </div>
 
             {/* Video Upload Section */}
-            <motion.div variants={item}>
+            <div>
               <label className="mb-2 block text-sm font-semibold text-gray-700">
                 <div className="flex items-center gap-2">
                   <Video size={16} className="text-blue-600" />
@@ -867,11 +822,11 @@ export default function EditBusinessPage() {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </div>
 
             {businessType === "physical" && (
               <>
-                <motion.div id="section-location" variants={item}>
+                <div id="section-location">
                   <label className="mb-2 block text-sm font-semibold text-gray-700">
                     Street Address <span className="text-red-500">*</span>
                   </label>
@@ -892,10 +847,11 @@ export default function EditBusinessPage() {
                     }
                     placeholder="Start typing your street address"
                     inputClassName="w-full h-auto rounded-xl border border-gray-200 bg-white p-3 pl-10 transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 outline-none text-base"
+                    showUseCurrentLocation
                   />
-                </motion.div>
+                </div>
 
-                <motion.div variants={item}>
+                <div>
                   <label className="mb-2 block text-sm font-semibold text-gray-700">
                     Area <span className="text-red-500">*</span>
                   </label>
@@ -908,9 +864,9 @@ export default function EditBusinessPage() {
                     placeholder="Sandton"
                     className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 outline-none"
                   />
-                </motion.div>
+                </div>
 
-                <motion.div variants={item}>
+                <div>
                   <label className="mb-2 block text-sm font-semibold text-gray-700">
                     Confirm the exact spot on the map{" "}
                     <span className="text-red-500">*</span>
@@ -925,16 +881,18 @@ export default function EditBusinessPage() {
                   />
 
                   <p className="mt-2 text-xs text-gray-400">
-                    The address search gets you close — drag the pin (or tap
-                    the map) to your exact entrance. This is what customers
-                    will actually navigate to.
+                    Easiest: tap &quot;Use my current location&quot; above
+                    while you&apos;re standing at the entrance. Typing an
+                    address gets you close too — just drag the pin (or tap
+                    the map) the rest of the way. This is what customers will
+                    actually navigate to.
                   </p>
-                </motion.div>
+                </div>
               </>
             )}
 
             {/* Contact number — what the listing's "Call" button dials */}
-            <motion.div variants={item}>
+            <div>
               <label className="mb-2 block text-sm font-semibold text-gray-700">
                 Contact Phone Number
               </label>
@@ -958,10 +916,10 @@ export default function EditBusinessPage() {
               <p className="mt-1.5 text-xs text-gray-400">
                 Customers will call this number directly from your listing.
               </p>
-            </motion.div>
+            </div>
 
             {/* Delivery & WhatsApp ordering */}
-            <motion.div id="section-extras" variants={item} className="space-y-3">
+            <div id="section-extras" className="space-y-3">
               <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 transition-all hover:bg-gray-50">
                 <input
                   type="checkbox"
@@ -1000,9 +958,9 @@ export default function EditBusinessPage() {
                   className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 outline-none"
                 />
               )}
-            </motion.div>
+            </div>
 
-            <motion.div variants={item}>
+            <div>
               <label className="mb-2 block text-sm font-semibold text-gray-700">
                 Price Range
               </label>
@@ -1025,18 +983,11 @@ export default function EditBusinessPage() {
                 What a customer typically pays for one item or one visit —
                 helps them know what to expect before they call.
               </p>
-            </motion.div>
+            </div>
 
-            <motion.button
-              variants={item}
-              whileHover={{
-                scale: 1.02,
-              }}
-              whileTap={{
-                scale: 0.97,
-              }}
+            <button
               disabled={loading || uploadingImages || uploadingVideos}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-3 font-semibold text-white shadow-lg transition-all hover:shadow-blue-400/40 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-3 font-semibold text-white shadow-lg transition-all hover:shadow-blue-400/40 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Sparkles size={18} />
 
@@ -1052,10 +1003,10 @@ export default function EditBusinessPage() {
               ) : (
                 "Save Changes"
               )}
-            </motion.button>
-          </motion.form>
-        </motion.div>
-      </motion.div>
+            </button>
+          </form>
+        </div>
+      </div>
     </main>
   );
 }

@@ -10,6 +10,13 @@ interface GigSearchStore {
   type: GigType | "";
   categorySlug: string;
   subcategorySlug: string;
+
+  // Display names for the slugs above — kept alongside them so the
+  // "{Category} Piece Jobs" heading (see formatCategoryHeading) doesn't
+  // need its own category fetch just to turn a slug back into a label.
+  categoryName: string;
+  subcategoryName: string;
+
   urgency: GigUrgency | "";
 
   searchTrigger: number;
@@ -20,9 +27,12 @@ interface GigSearchStore {
 
   setType: (type: GigType | "") => void;
 
-  setCategorySlug: (categorySlug: string) => void;
+  setCategorySlug: (categorySlug: string, categoryName?: string) => void;
 
-  setSubcategorySlug: (subcategorySlug: string) => void;
+  setSubcategorySlug: (
+    subcategorySlug: string,
+    subcategoryName?: string
+  ) => void;
 
   setUrgency: (urgency: GigUrgency | "") => void;
 
@@ -41,6 +51,8 @@ export const useGigSearchStore = create<GigSearchStore>((set) => ({
   type: "",
   categorySlug: "",
   subcategorySlug: "",
+  categoryName: "",
+  subcategoryName: "",
   urgency: "",
 
   searchTrigger: 0,
@@ -51,15 +63,18 @@ export const useGigSearchStore = create<GigSearchStore>((set) => ({
 
   setType: (type) => set({ type }),
 
-  setCategorySlug: (categorySlug) =>
+  setCategorySlug: (categorySlug, categoryName = "") =>
     set({
       categorySlug,
+      categoryName,
       // Selecting a new top-level category invalidates whatever
       // subcategory was previously chosen under the old category.
       subcategorySlug: "",
+      subcategoryName: "",
     }),
 
-  setSubcategorySlug: (subcategorySlug) => set({ subcategorySlug }),
+  setSubcategorySlug: (subcategorySlug, subcategoryName = "") =>
+    set({ subcategorySlug, subcategoryName }),
 
   setUrgency: (urgency) => set({ urgency }),
 
@@ -74,6 +89,8 @@ export const useGigSearchStore = create<GigSearchStore>((set) => ({
       type: "",
       categorySlug: "",
       subcategorySlug: "",
+      categoryName: "",
+      subcategoryName: "",
       urgency: "",
       searchTrigger: state.searchTrigger + 1,
     })),

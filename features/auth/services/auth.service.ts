@@ -7,6 +7,8 @@ export interface SignupDto {
   email?: string;
   phoneNumber?: string;
   password: string;
+  socialLink?: string;
+  tiktokUrl?: string;
 }
 
 export interface SignupResponse {
@@ -99,6 +101,8 @@ export async function getProfile() {
 export async function updateProfile(data: {
   firstName?: string;
   surname?: string;
+  socialLink?: string;
+  tiktokUrl?: string;
 }) {
   const token = localStorage.getItem("token");
 

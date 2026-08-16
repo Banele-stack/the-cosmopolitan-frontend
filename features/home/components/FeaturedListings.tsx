@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import RoomCard from "@/features/rooms/components/RoomCard";
 import { getRooms } from "@/features/rooms/services/room.service";
@@ -8,14 +7,10 @@ import { useRoomSearchStore } from "@/features/rooms/store/room-search.store";
 import Pagination from "@/components/ui/Pagination";
 import { NearbyMeta, PaginationMeta } from "@/types/pagination";
 import { formatNearbyLabel } from "@/lib/format-nearby-label";
+import { formatRoomsHeading } from "@/lib/format-listing-heading";
+import { ROOM_PRICE_RANGE_OPTIONS } from "@/features/rooms/constants/price-range.constants";
 
 const ROOMS_PAGE_LIMIT = 10;
-
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 50 },
-  visible: { opacity: 1, y: 0 },
-};
 
 interface FeaturedListingsProps {
   // Auto-detected area name (e.g. "Cosmo City") from useAutoDetectLocation,
@@ -168,30 +163,13 @@ const data = await getRooms({
 
       <div className="relative max-w-7xl mx-auto px-4">
 
-        <motion.div
-          initial={{
-            opacity: 0,
-            y: 40,
-          }}
-          whileInView={{
-            opacity: 1,
-            y: 0,
-          }}
-          viewport={{
-            once: true,
-            amount: 0.3,
-          }}
-          transition={{
-            duration: 0.6,
-          }}
-          className="mb-10"
-        >
+        <div className="mb-10">
           <span className="text-violet-600 font-semibold text-sm uppercase tracking-wider">
             Discover
           </span>
 
           <h2 className="text-3xl md:text-5xl font-black mt-2">
-            Featured Rooms
+            {formatRoomsHeading(activeTags, priceRange, ROOM_PRICE_RANGE_OPTIONS)}
           </h2>
 
           <p className="text-gray-500 mt-2">
@@ -202,7 +180,7 @@ const data = await getRooms({
               enrichedRooms.length
             )}
           </p>
-        </motion.div>
+        </div>
 
         {enrichedRooms.length === 0 ? (
           <div className="text-center py-10 text-gray-500">
@@ -212,26 +190,9 @@ const data = await getRooms({
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
 
-              {enrichedRooms.map(
-                (room: any, index) => (
-                  <motion.div
-                    key={room.id}
-                    variants={cardVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{
-                      once: true,
-                      amount: 0.15,
-                    }}
-                    transition={{
-                      duration: 0.5,
-                      delay: index * 0.05,
-                    }}
-                  >
-                    <RoomCard room={room} />
-                  </motion.div>
-                )
-              )}
+              {enrichedRooms.map((room: any) => (
+                <RoomCard key={room.id} room={room} />
+              ))}
 
             </div>
 

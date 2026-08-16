@@ -8,7 +8,6 @@ import {
   Sofa, Wifi, Car, PawPrint, Zap, Droplets, Image, Video, X, Upload, Loader2,
   Phone
 } from "lucide-react";
-import { motion } from "framer-motion";
 import FormProgress from "@/components/ui/FormProgress";
 import AuthGate from "@/components/ui/AuthGate";
 import AddressAutocomplete, {
@@ -406,29 +405,6 @@ export default function EditRoomPage() {
     }
   };
 
-  const container = {
-    hidden: {},
-    show: {
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const item = {
-    hidden: {
-      opacity: 0,
-      y: 25,
-    },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5,
-      },
-    },
-  };
-
   const FORM_SECTIONS = [
     { id: "section-basics", label: "Basic Information" },
     { id: "section-images", label: "Photos" },
@@ -482,30 +458,13 @@ export default function EditRoomPage() {
       <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-green-300/20 blur-3xl" />
       <div className="absolute left-1/2 top-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-300/10 blur-3xl" />
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="relative mx-auto max-w-2xl"
-      >
-        <motion.div
-          variants={item}
-          className="rounded-3xl border border-white/40 bg-white/70 p-8 shadow-2xl backdrop-blur-xl"
-        >
+      <div className="relative mx-auto max-w-2xl">
+        <div className="rounded-3xl border border-white/40 bg-white/70 p-8 shadow-2xl backdrop-blur-xl">
           {/* Header */}
           <div className="mb-8 text-center">
-            <motion.div
-              animate={{
-                y: [0, -6, 0],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-              }}
-              className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 shadow-xl"
-            >
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 shadow-xl">
               <BedDouble size={30} className="text-white" />
-            </motion.div>
+            </div>
 
             <h1 className="text-3xl font-bold text-gray-900">
               Edit Your Property
@@ -516,13 +475,10 @@ export default function EditRoomPage() {
             </p>
           </div>
 
-          <motion.form
-            variants={container}
-            onSubmit={handleSubmit}
-            className="space-y-6"
-          >
+          <form onSubmit={handleSubmit}
+            className="space-y-6">
             {/* Basic Information */}
-            <motion.div id="section-basics" variants={item}>
+            <div id="section-basics">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <Home size={16} className="text-green-600" />
                 Basic Information
@@ -580,10 +536,10 @@ export default function EditRoomPage() {
                   className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-green-500 focus:ring-4 focus:ring-green-200 outline-none resize-none"
                 />
               </div>
-            </motion.div>
+            </div>
 
             {/* Image Upload */}
-            <motion.div id="section-images" variants={item}>
+            <div id="section-images">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <Image size={16} className="text-green-600" />
                 Property Images
@@ -685,10 +641,10 @@ export default function EditRoomPage() {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </div>
 
             {/* Video Upload */}
-            <motion.div id="section-videos" variants={item}>
+            <div id="section-videos">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <Video size={16} className="text-green-600" />
                 Property Videos
@@ -783,10 +739,10 @@ export default function EditRoomPage() {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </div>
 
             {/* Pricing */}
-            <motion.div id="section-pricing" variants={item}>
+            <div id="section-pricing">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <DollarSign size={16} className="text-green-600" />
                 Pricing
@@ -813,10 +769,10 @@ export default function EditRoomPage() {
                   className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-green-500 focus:ring-4 focus:ring-green-200 outline-none"
                 />
               </div>
-            </motion.div>
+            </div>
 
             {/* Property Details */}
-            <motion.div id="section-details" variants={item}>
+            <div id="section-details">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <BedDouble size={16} className="text-green-600" />
                 Property Details
@@ -853,10 +809,10 @@ export default function EditRoomPage() {
                   ))}
                 </select>
               </div>
-            </motion.div>
+            </div>
 
             {/* Location */}
-            <motion.div id="section-location" variants={item}>
+            <div id="section-location">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <MapPin size={16} className="text-green-600" />
                 Location
@@ -879,6 +835,7 @@ export default function EditRoomPage() {
                   }
                   placeholder="Start typing your street address *"
                   inputClassName="w-full h-auto rounded-xl border border-gray-200 bg-white p-3 pl-10 transition-all duration-300 focus:border-green-500 focus:ring-4 focus:ring-green-200 outline-none text-base"
+                  showUseCurrentLocation
                 />
 
                 <input
@@ -905,16 +862,18 @@ export default function EditRoomPage() {
                   />
 
                   <p className="mt-2 text-xs text-gray-400">
-                    The address search gets you close — drag the pin (or tap
-                    the map) to the exact gate or entrance. This is what
-                    tenants will actually navigate to.
+                    Easiest: tap &quot;Use my current location&quot; above
+                    while you&apos;re standing at the gate or entrance. Typing
+                    an address gets you close too — just drag the pin (or tap
+                    the map) the rest of the way. This is what tenants will
+                    actually navigate to.
                   </p>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Availability */}
-            <motion.div id="section-availability" variants={item}>
+            <div id="section-availability">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <Calendar size={16} className="text-green-600" />
                 Availability <span className="text-red-500">*</span>
@@ -945,10 +904,10 @@ export default function EditRoomPage() {
                   ))}
                 </select>
               </div>
-            </motion.div>
+            </div>
 
             {/* Contact — what the listing's Call/WhatsApp buttons use */}
-            <motion.div variants={item}>
+            <div>
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <Phone size={16} className="text-green-600" />
                 Contact
@@ -978,10 +937,10 @@ export default function EditRoomPage() {
               <p className="mt-1.5 text-xs text-gray-400">
                 Interested renters will call or WhatsApp this number directly — leave WhatsApp blank to use the same number.
               </p>
-            </motion.div>
+            </div>
 
             {/* Amenities */}
-            <motion.div id="section-amenities" variants={item}>
+            <div id="section-amenities">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <Sofa size={16} className="text-green-600" />
                 Amenities
@@ -1018,20 +977,11 @@ export default function EditRoomPage() {
                   </label>
                 ))}
               </div>
-            </motion.div>
+            </div>
 
-            <motion.button
-              variants={item}
-              whileHover={{
-                scale: 1.02,
-              }}
-              whileTap={{
-                scale: 0.97,
-              }}
-              type="submit"
-              disabled={loading || uploadingImages || uploadingVideos}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 py-3.5 font-semibold text-white shadow-lg transition-all hover:shadow-green-400/40 disabled:cursor-not-allowed disabled:opacity-60"
-            >
+            <button type="submit"
+            disabled={loading || uploadingImages || uploadingVideos}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 py-3.5 font-semibold text-white shadow-lg transition-all hover:shadow-green-400/40 disabled:cursor-not-allowed disabled:opacity-60">
               {loading ? (
                 <>
                   <Loader2 size={18} className="animate-spin" />
@@ -1047,10 +997,10 @@ export default function EditRoomPage() {
                   Save Changes
                 </>
               )}
-            </motion.button>
-          </motion.form>
-        </motion.div>
-      </motion.div>
+            </button>
+          </form>
+        </div>
+      </div>
     </main>
   );
 }

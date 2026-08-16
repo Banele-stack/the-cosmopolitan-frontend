@@ -64,12 +64,19 @@ function AskAIChat({ showNavbar }: { showNavbar: boolean }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Anchored to the newest message itself (not a sentinel after
+  // everything) and scrolled with block: "start" — so a reply that comes
+  // back with a grid of result cards lands with its own top edge in view,
+  // letting the user read down into the cards naturally. Scrolling to a
+  // trailing sentinel instead (the previous approach) always jumps past
+  // the cards to the very bottom of the message list, which is the
+  // "results scroll to the bottom" complaint this replaces.
+  const lastMessageRef = useRef<HTMLDivElement>(null);
   const hasStarted = messages.length > 1;
 
   useEffect(() => {
     if (!hasStarted) return;
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    lastMessageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [messages, hasStarted]);
 
   const sendMessage = async (text?: string) => {
@@ -234,7 +241,10 @@ function AskAIChat({ showNavbar }: { showNavbar: boolean }) {
           <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
             <div className="mx-auto flex max-w-3xl flex-col gap-6">
               {messages.map((message, index) => (
-                <div key={index}>
+                <div
+                  key={index}
+                  ref={index === messages.length - 1 ? lastMessageRef : undefined}
+                >
                   {message.role === "user" ? (
                     <div className="flex justify-end">
                       <div className="max-w-[85%] rounded-3xl bg-gray-100 px-4 py-2.5 sm:max-w-[75%]">
@@ -297,8 +307,6 @@ function AskAIChat({ showNavbar }: { showNavbar: boolean }) {
                   </div>
                 </div>
               )}
-
-              <div ref={messagesEndRef} />
             </div>
           </div>
 

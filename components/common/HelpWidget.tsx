@@ -1,20 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { HelpCircle, X, Phone, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
-// Fixed site-wide contact point for reaching Banele Ngubane, the admin who
-// reviews reports/reviews — not a per-listing owner contact. Rendered once
-// in the root layout so it's reachable from every page (create forms,
-// listing details, dashboard, etc. all use different header layouts, so a
-// nav link would've missed some of them).
-const ADMIN_NAME = "Banele Ngubane";
+// Fixed site-wide contact point for reaching the admin who reviews
+// reports/reviews — not a per-listing owner contact. Rendered once in the
+// root layout so it's reachable from every page (create forms, listing
+// details, dashboard, etc. all use different header layouts, so a nav link
+// would've missed some of them). Kept anonymous in the UI copy on purpose —
+// the number behind it belongs to a real person, but the widget speaks for
+// "support", not for them by name.
 const ADMIN_PHONE = "+27723255319";
 const WHATSAPP_LINK = `https://wa.me/${ADMIN_PHONE.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
-  "Hi Banele, I need help with The Cosmopolitan."
+  "Hi, I need help with The Cosmopolitan."
 )}`;
 
 export default function HelpWidget() {
@@ -22,20 +22,15 @@ export default function HelpWidget() {
 
   return (
     <div className="fixed bottom-24 right-4 z-[60] md:bottom-6 md:right-6">
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: 12, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
+      {open && (
+          <div
             className="absolute bottom-16 right-0 w-72 rounded-2xl border border-gray-200 bg-white p-4 shadow-2xl"
           >
             <div className="flex items-start justify-between">
               <div>
                 <p className="font-semibold text-gray-900">Need help?</p>
                 <p className="mt-0.5 text-xs text-gray-500">
-                  Reach {ADMIN_NAME} directly — questions, issues, anything.
+                  Reach our support team directly — questions, issues, anything.
                 </p>
               </div>
 
@@ -67,19 +62,16 @@ export default function HelpWidget() {
                 WhatsApp
               </a>
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
 
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+      <button
         onClick={() => setOpen((v) => !v)}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-lg"
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-lg active:scale-95 transition-transform"
         aria-label="Help"
       >
         {open ? <X size={22} /> : <HelpCircle size={22} />}
-      </motion.button>
+      </button>
     </div>
   );
 }

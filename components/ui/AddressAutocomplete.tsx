@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Loader2, MapPin } from "lucide-react";
+import { Loader2, LocateFixed, MapPin } from "lucide-react";
+import { reverseGeocode } from "@/lib/geocode";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
@@ -21,6 +22,15 @@ interface AddressAutocompleteProps {
   placeholder?: string;
   className?: string;
   inputClassName?: string;
+  // Adds a "Use my current location" button below the input. Off by
+  // default — this is for the "pin your exact spot so people can find you"
+  // forms (room/business/gig create+edit), not the "near me" search bars,
+  // which already treat a blank field as near-me. Typed/searched addresses
+  // depend on OpenStreetMap having decent street-level data for the area,
+  // which is thin in a lot of townships/informal settlements; a GPS fix
+  // taken while physically standing at the spot sidesteps that entirely —
+  // and needs no map skill at all, unlike panning/zooming to find yourself.
+  showUseCurrentLocation?: boolean;
 }
 
 export default function AddressAutocomplete({
@@ -30,12 +40,15 @@ export default function AddressAutocomplete({
   placeholder = "Start typing an address or suburb...",
   className = "",
   inputClassName = "",
+  showUseCurrentLocation = false,
 }: AddressAutocompleteProps) {
   const [results, setResults] = useState<GeocodeResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [searched, setSearched] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [locateError, setLocateError] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -114,6 +127,42 @@ export default function AddressAutocomplete({
     setSearched(false);
   };
 
+  const useCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setLocateError("This device can't share its location.");
+      return;
+    }
+
+    setLocating(true);
+    setLocateError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude: lat, longitude: lng } = position.coords;
+
+        // Reverse geocoding only fills in a readable address/area label —
+        // if it comes back empty (patchy OSM coverage), the GPS fix itself
+        // is still exact and gets used as-is. That's the point: the pin
+        // location never depends on the address lookup succeeding.
+        const reverse = await reverseGeocode(lat, lng);
+
+        handleSelect(
+          reverse ?? { label: "Current location", address: "", area: "", lat, lng }
+        );
+
+        setLocating(false);
+      },
+      (error) => {
+        setLocateError(
+          error.code === error.PERMISSION_DENIED
+            ? "Location access was blocked — allow it in your browser, or search for your address above."
+            : "Couldn't get your location — try searching for your address above."
+        );
+        setLocating(false);
+      }
+    );
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!isOpen || results.length === 0) return;
 
@@ -157,6 +206,28 @@ export default function AddressAutocomplete({
           size={15}
           className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-gray-400"
         />
+      )}
+
+      {showUseCurrentLocation && (
+        <div className="mt-2">
+          <button
+            type="button"
+            onClick={useCurrentLocation}
+            disabled={locating}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm font-medium text-violet-700 transition hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {locating ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <LocateFixed size={16} />
+            )}
+            {locating ? "Finding you..." : "Use my current location"}
+          </button>
+
+          {locateError && (
+            <p className="mt-1.5 text-xs text-red-500">{locateError}</p>
+          )}
+        </div>
       )}
 
       {isOpen && (results.length > 0 || (searched && !loading)) && (

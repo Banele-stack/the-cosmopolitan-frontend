@@ -60,6 +60,8 @@ export interface Business {
 
   ownerId?: number;
   ownerVerified?: boolean;
+  ownerTiktokUrl?: string;
+  ownerSocialUrl?: string;
   viewCount?: number;
   contactClickCount?: number;
 }

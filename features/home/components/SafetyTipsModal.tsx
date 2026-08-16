@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { ShieldCheck, MapPin, Wallet, KeyRound, Flag } from "lucide-react";
 
 const STORAGE_KEY = "northstar_safety_tips_v1";
@@ -61,24 +60,17 @@ export default function SafetyTipsModal({ trigger }: SafetyTipsModalProps) {
     }
   };
 
+  if (!open) return null;
+
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[210] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4"
-          onClick={close}
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 40 }}
-            transition={{ type: "spring", damping: 28, stiffness: 300 }}
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl"
-          >
+    <div
+      className="fixed inset-0 z-[210] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4"
+      onClick={close}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl"
+      >
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50">
               <ShieldCheck size={24} className="text-emerald-600" />
             </div>
@@ -107,9 +99,7 @@ export default function SafetyTipsModal({ trigger }: SafetyTipsModalProps) {
             >
               Got it, thanks
             </button>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+      </div>
+    </div>
   );
 }

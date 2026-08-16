@@ -296,3 +296,37 @@
     transform-origin: center;
   }
 }
+
+/* =========================
+   🔮 AI ORB
+   Used by AIOrb.tsx (the "Just Ask" tab icon) — a small rotating gradient
+   circle in the style of ChatGPT/Gemini/Siri's voice-mode indicators,
+   built as two stacked animations rather than a hosted gif so it stays
+   crisp at icon size with no external asset to load.
+========================= */
+
+@keyframes aiOrbSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes aiOrbPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+@layer utilities {
+  .animate-ai-orb-spin {
+    animation: aiOrbSpin 3s linear infinite;
+  }
+
+  .animate-ai-orb-pulse {
+    animation: aiOrbPulse 2.4s ease-in-out infinite;
+    transform-origin: center;
+  }
+}

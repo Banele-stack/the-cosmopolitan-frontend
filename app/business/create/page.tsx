@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -17,7 +17,6 @@ import {
   MessageCircle,
   Phone,
 } from "lucide-react";
-import { motion } from "framer-motion";
 import FormProgress from "@/components/ui/FormProgress";
 import AuthGate from "@/components/ui/AuthGate";
 import AddressAutocomplete, {
@@ -47,6 +46,14 @@ export default function CreateBusinessPage() {
 
   const [loading, setLoading] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
+
+  // Was one continuous scroll through every field — now shows one section
+  // at a time. Gated by section *id* rather than a raw step number, because
+  // FORM_SECTIONS itself changes length (Location only exists for physical
+  // businesses) — an id lookup self-corrects regardless of navigation path,
+  // where a hardcoded index could desync if businessType changes mid-flow.
+  const [currentStep, setCurrentStep] = useState(0);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const [categories, setCategories] = useState<BusinessCategory[]>([]);
 
@@ -354,29 +361,6 @@ export default function CreateBusinessPage() {
     }
   };
 
-  const container = {
-    hidden: {},
-    show: {
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const item = {
-    hidden: {
-      opacity: 0,
-      y: 25,
-    },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5,
-      },
-    },
-  };
-
   const FORM_SECTIONS = [
     { id: "section-type", label: "Business Type" },
     { id: "section-details", label: "Business Details" },
@@ -384,8 +368,43 @@ export default function CreateBusinessPage() {
     ...(businessType === "physical"
       ? [{ id: "section-location", label: "Location" }]
       : []),
+    { id: "section-contact", label: "Contact" },
     { id: "section-extras", label: "Delivery & Pricing" },
   ];
+
+  const currentSectionId = FORM_SECTIONS[currentStep]?.id;
+  const isLastStep = currentStep === FORM_SECTIONS.length - 1;
+
+  const goNext = () => {
+    const formEl = formRef.current;
+
+    // Only the current step's inputs exist in the DOM right now, so this
+    // native check is automatically scoped to just this step.
+    if (formEl && !formEl.checkValidity()) {
+      formEl.reportValidity();
+      return;
+    }
+
+    // The map pin isn't a native form field, so checkValidity() can't see
+    // it — same requirement the original submit-time check enforced.
+    if (
+      currentSectionId === "section-location" &&
+      (form.lat == null || form.lng == null)
+    ) {
+      toast.error(
+        "Please confirm your business's exact location on the map before continuing."
+      );
+      return;
+    }
+
+    setCurrentStep((step) => Math.min(step + 1, FORM_SECTIONS.length - 1));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const goBack = () => {
+    setCurrentStep((step) => Math.max(step - 1, 0));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   // Hold the page blank until the auth check resolves, so a logged-out
   // visitor never sees the form flash before the sign-in prompt swaps in.
@@ -416,6 +435,7 @@ export default function CreateBusinessPage() {
         sections={FORM_SECTIONS}
         accent="from-blue-500 to-indigo-600"
         containerClassName="max-w-xl"
+        activeIndex={currentStep}
       />
 
       {/* Background blobs */}
@@ -423,35 +443,18 @@ export default function CreateBusinessPage() {
 
       <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-indigo-300/20 blur-3xl" />
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="relative mx-auto max-w-xl"
-      >
-        <motion.div
-          variants={item}
-          className="rounded-3xl border border-white/40 bg-white/70 p-8 shadow-2xl backdrop-blur-xl"
-        >
+      <div className="relative mx-auto max-w-xl">
+        <div className="rounded-3xl border border-white/40 bg-white/70 p-8 shadow-2xl backdrop-blur-xl">
           {/* Header */}
 
           <div className="mb-8 text-center">
 
-            <motion.div
-              animate={{
-                y: [0, -6, 0],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-              }}
-              className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 shadow-xl"
-            >
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 shadow-xl">
               <Building2
                 size={30}
                 className="text-white"
               />
-            </motion.div>
+            </div>
 
             <h1 className="text-3xl font-bold text-gray-900">
               Create Business
@@ -463,13 +466,14 @@ export default function CreateBusinessPage() {
             </p>
           </div>
 
-          <motion.form
-            variants={container}
+          <form
+            ref={formRef}
             onSubmit={handleSubmit}
             className="space-y-5"
           >
             {/* Business Type */}
-            <motion.div id="section-type" variants={item}>
+            {currentSectionId === "section-type" && (
+            <div id="section-type">
               <label className="mb-2 block text-sm font-semibold text-gray-700">
                 Business Type
               </label>
@@ -507,106 +511,113 @@ export default function CreateBusinessPage() {
                   ? "Has a physical address, appears in nearby searches."
                   : "No physical address needed. Won't appear in nearby searches, but is still searchable and browsable by category."}
               </p>
-            </motion.div>
+            </div>
+            )}
 
-            <motion.div id="section-details" variants={item}>
-              <label className="mb-2 block text-sm font-semibold text-gray-700">
-                Business Name <span className="text-red-500">*</span>
-              </label>
-
-              <input
-                required
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder="e.g. Sunrise Hotel"
-                className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 outline-none"
-              />
-            </motion.div>
-
-            <motion.div variants={item}>
-              <label className="mb-2 block text-sm font-semibold text-gray-700">
-                Qualification / Credential{" "}
-                <span className="font-normal text-gray-400">(optional)</span>
-              </label>
-
-              <input
-                name="credential"
-                value={form.credential}
-                onChange={handleChange}
-                placeholder="e.g. BCom Accounting Graduate, Final-year Engineering Student"
-                maxLength={100}
-                className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 outline-none"
-              />
-
-              <p className="mt-2 text-xs text-gray-500">
-                Got a degree, diploma, or certification relevant to what
-                you're offering? Show it here — it's shown as a badge on
-                your listing.
-              </p>
-            </motion.div>
-
-            <motion.div variants={item}>
-              <label className="mb-2 block text-sm font-semibold text-gray-700">
-                Category <span className="text-red-500">*</span>
-              </label>
-
-              <select
-                required
-                name="categorySlug"
-                value={form.categorySlug}
-                onChange={handleChange}
-                className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 outline-none"
-              >
-                <option value="">Select category</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.slug}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </motion.div>
-
-            {activeCategory && activeCategory.subcategories.length > 0 && (
-              <motion.div variants={item}>
+            {currentSectionId === "section-details" && (
+            <div id="section-details" className="space-y-5">
+              <div>
                 <label className="mb-2 block text-sm font-semibold text-gray-700">
-                  Subcategory
+                  Business Name <span className="text-red-500">*</span>
+                </label>
+
+                <input
+                  required
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder="e.g. Sunrise Hotel"
+                  className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-gray-700">
+                  Qualification / Credential{" "}
+                  <span className="font-normal text-gray-400">(optional)</span>
+                </label>
+
+                <input
+                  name="credential"
+                  value={form.credential}
+                  onChange={handleChange}
+                  placeholder="e.g. BCom Accounting Graduate, Final-year Engineering Student"
+                  maxLength={100}
+                  className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 outline-none"
+                />
+
+                <p className="mt-2 text-xs text-gray-500">
+                  Got a degree, diploma, or certification relevant to what
+                  you're offering? Show it here — it's shown as a badge on
+                  your listing.
+                </p>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-gray-700">
+                  Category <span className="text-red-500">*</span>
                 </label>
 
                 <select
-                  name="subcategorySlug"
-                  value={form.subcategorySlug}
+                  required
+                  name="categorySlug"
+                  value={form.categorySlug}
                   onChange={handleChange}
                   className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 outline-none"
                 >
-                  <option value="">Select subcategory (optional)</option>
-                  {activeCategory.subcategories.map((subcategory) => (
-                    <option key={subcategory.id} value={subcategory.slug}>
-                      {subcategory.name}
+                  <option value="">Select category</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.slug}>
+                      {category.name}
                     </option>
                   ))}
                 </select>
-              </motion.div>
+              </div>
+
+              {activeCategory && activeCategory.subcategories.length > 0 && (
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-gray-700">
+                    Subcategory
+                  </label>
+
+                  <select
+                    name="subcategorySlug"
+                    value={form.subcategorySlug}
+                    onChange={handleChange}
+                    className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 outline-none"
+                  >
+                    <option value="">Select subcategory (optional)</option>
+                    {activeCategory.subcategories.map((subcategory) => (
+                      <option key={subcategory.id} value={subcategory.slug}>
+                        {subcategory.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-gray-700">
+                  Description <span className="text-red-500">*</span>
+                </label>
+
+                <textarea
+                  required
+                  rows={4}
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  placeholder="Tell customers about your business..."
+                  className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 outline-none"
+                />
+              </div>
+            </div>
             )}
 
-            <motion.div variants={item}>
-              <label className="mb-2 block text-sm font-semibold text-gray-700">
-                Description <span className="text-red-500">*</span>
-              </label>
-
-              <textarea
-                required
-                rows={4}
-                name="description"
-                value={form.description}
-                onChange={handleChange}
-                placeholder="Tell customers about your business..."
-                className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 outline-none"
-              />
-            </motion.div>
-
             {/* Image Upload Section */}
-            <motion.div id="section-media" variants={item}>
+            {currentSectionId === "section-media" && (
+            <div id="section-media" className="space-y-6">
+              <div>
               <label className="mb-2 block text-sm font-semibold text-gray-700">
                 <div className="flex items-center gap-2">
                   <Image size={16} className="text-blue-600" />
@@ -696,10 +707,10 @@ export default function CreateBusinessPage() {
                   </p>
                 )}
               </div>
-            </motion.div>
+              </div>
 
-            {/* Video Upload Section */}
-            <motion.div variants={item}>
+              {/* Video Upload */}
+              <div>
               <label className="mb-2 block text-sm font-semibold text-gray-700">
                 <div className="flex items-center gap-2">
                   <Video size={16} className="text-blue-600" />
@@ -778,11 +789,13 @@ export default function CreateBusinessPage() {
                   </p>
                 )}
               </div>
-            </motion.div>
+              </div>
+            </div>
+            )}
 
-            {businessType === "physical" && (
+            {currentSectionId === "section-location" && businessType === "physical" && (
               <>
-                <motion.div id="section-location" variants={item}>
+                <div id="section-location">
                   <label className="mb-2 block text-sm font-semibold text-gray-700">
                     Street Address <span className="text-red-500">*</span>
                   </label>
@@ -803,10 +816,11 @@ export default function CreateBusinessPage() {
                     }
                     placeholder="Start typing your street address"
                     inputClassName="w-full h-auto rounded-xl border border-gray-200 bg-white p-3 pl-10 transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 outline-none text-base"
+                    showUseCurrentLocation
                   />
-                </motion.div>
+                </div>
 
-                <motion.div variants={item}>
+                <div>
                   <label className="mb-2 block text-sm font-semibold text-gray-700">
                     Area <span className="text-red-500">*</span>
                   </label>
@@ -819,9 +833,9 @@ export default function CreateBusinessPage() {
                     placeholder="Sandton"
                     className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 outline-none"
                   />
-                </motion.div>
+                </div>
 
-                <motion.div variants={item}>
+                <div>
                   <label className="mb-2 block text-sm font-semibold text-gray-700">
                     Confirm the exact spot on the map{" "}
                     <span className="text-red-500">*</span>
@@ -836,16 +850,19 @@ export default function CreateBusinessPage() {
                   />
 
                   <p className="mt-2 text-xs text-gray-400">
-                    The address search gets you close — drag the pin (or tap
-                    the map) to your exact entrance. This is what customers
-                    will actually navigate to.
+                    Easiest: tap &quot;Use my current location&quot; above
+                    while you&apos;re standing at the entrance. Typing an
+                    address gets you close too — just drag the pin (or tap
+                    the map) the rest of the way. This is what customers will
+                    actually navigate to.
                   </p>
-                </motion.div>
+                </div>
               </>
             )}
 
             {/* Contact number — what the listing's "Call" button dials */}
-            <motion.div variants={item}>
+            {currentSectionId === "section-contact" && (
+            <div id="section-contact">
               <label className="mb-2 block text-sm font-semibold text-gray-700">
                 Contact Phone Number
               </label>
@@ -869,10 +886,12 @@ export default function CreateBusinessPage() {
               <p className="mt-1.5 text-xs text-gray-400">
                 Customers will call this number directly from your listing.
               </p>
-            </motion.div>
+            </div>
+            )}
 
             {/* Delivery & WhatsApp ordering */}
-            <motion.div id="section-extras" variants={item} className="space-y-3">
+            {currentSectionId === "section-extras" && (
+            <div id="section-extras" className="space-y-3">
               <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 transition-all hover:bg-gray-50">
                 <input
                   type="checkbox"
@@ -911,43 +930,63 @@ export default function CreateBusinessPage() {
                   className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 outline-none"
                 />
               )}
-            </motion.div>
 
-            <motion.div variants={item}>
-              <label className="mb-2 block text-sm font-semibold text-gray-700">
-                Price Range
-              </label>
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-gray-700">
+                  Price Range
+                </label>
 
-              <select
-                name="priceRange"
-                value={form.priceRange}
-                onChange={handleChange}
-                className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 outline-none"
-              >
-                <option value="">Not specified</option>
-                {PRICE_RANGE_OPTIONS.map(({ value, label }) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
+                <select
+                  name="priceRange"
+                  value={form.priceRange}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-gray-200 bg-white p-3 transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 outline-none"
+                >
+                  <option value="">Not specified</option>
+                  {PRICE_RANGE_OPTIONS.map(({ value, label }) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
 
-              <p className="mt-1.5 text-xs text-gray-400">
-                What a customer typically pays for one item or one visit —
-                helps them know what to expect before they call.
-              </p>
-            </motion.div>
+                <p className="mt-1.5 text-xs text-gray-400">
+                  What a customer typically pays for one item or one visit —
+                  helps them know what to expect before they call.
+                </p>
+              </div>
+            </div>
+            )}
 
-            <motion.button
-              variants={item}
-              whileHover={{
-                scale: 1.02,
-              }}
-              whileTap={{
-                scale: 0.97,
-              }}
+            {/* Back / Next — only the last step (Delivery & Pricing) shows
+                the real submit button, so nothing gets created until every
+                step has been through its own validation. */}
+            <div className="flex gap-3">
+              {currentStep > 0 && (
+                <button
+                  type="button"
+                  onClick={goBack}
+                  className="rounded-xl border border-gray-300 bg-white px-5 py-3 font-semibold text-gray-700 transition-all hover:bg-gray-50"
+                >
+                  Back
+                </button>
+              )}
+
+              {!isLastStep && (
+                <button
+                  type="button"
+                  onClick={goNext}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-3 font-semibold text-white shadow-lg transition-all hover:shadow-blue-400/40 active:scale-[0.97]"
+                >
+                  Next
+                </button>
+              )}
+
+              {isLastStep && (
+            <button
+              type="submit"
               disabled={loading || uploadingImages || uploadingVideos}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-3 font-semibold text-white shadow-lg transition-all hover:shadow-blue-400/40 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-3 font-semibold text-white shadow-lg transition-all hover:shadow-blue-400/40 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Sparkles size={18} />
 
@@ -963,10 +1002,12 @@ export default function CreateBusinessPage() {
               ) : (
                 "Create Business"
               )}
-            </motion.button>
-          </motion.form>
-        </motion.div>
-      </motion.div>
+            </button>
+              )}
+            </div>
+          </form>
+        </div>
+      </div>
     </main>
   );
 }

@@ -68,6 +68,8 @@ export type Room = {
 
   ownerId?: number;
   ownerVerified?: boolean;
+  ownerTiktokUrl?: string;
+  ownerSocialUrl?: string;
   viewCount?: number;
   contactClickCount?: number;
 };

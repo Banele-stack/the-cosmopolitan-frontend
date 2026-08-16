@@ -6,12 +6,13 @@ export default function AuthPage() {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gray-50 px-5">
 
-      {/* background glow */}
-      <div className="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-gradient-to-r from-violet-400/20 via-blue-400/20 to-cyan-400/20 blur-[140px] rounded-full animate-pulse" />
-
-      {/* floating orbs */}
-      <div className="absolute top-20 left-6 w-28 h-28 bg-violet-300/20 rounded-full blur-3xl animate-bounce" />
-      <div className="absolute bottom-16 right-6 w-36 h-36 bg-blue-300/20 rounded-full blur-3xl animate-pulse" />
+      {/* Background glow — used to pulse/bounce forever. Constant motion on
+          the very first screen a new user sees reads as "something's
+          loading/wrong" rather than decoration, especially to someone who
+          isn't already used to app conventions. Static now. */}
+      <div className="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-gradient-to-r from-violet-400/20 via-blue-400/20 to-cyan-400/20 blur-[140px] rounded-full" />
+      <div className="absolute top-20 left-6 w-28 h-28 bg-violet-300/20 rounded-full blur-3xl" />
+      <div className="absolute bottom-16 right-6 w-36 h-36 bg-blue-300/20 rounded-full blur-3xl" />
 
       {/* content */}
       <div className="relative z-10 text-center max-w-sm">
