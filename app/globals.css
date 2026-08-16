@@ -1,0 +1,332 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* =========================
+   🎨 BASE DESIGN TOKENS
+========================= */
+
+:root {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* =========================
+   ✨ ANIMATION UTILITIES
+========================= */
+
+@layer utilities {
+
+  /* fade in */
+  .fade-in {
+    animation: fadeIn 0.7s var(--ease-out) both;
+  }
+
+  /* slide up */
+  .slide-up {
+    animation: slideUp 0.7s var(--ease-out) both;
+  }
+
+  /* pop in */
+  .pop-in {
+    animation: popIn 0.5s var(--ease-out) both;
+  }
+
+  /* floating motion */
+  .float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  /* attention grabber (move move pause move) */
+  .nudge-loop {
+    animation: nudge 5s ease-in-out infinite;
+  }
+
+  /* hide scrollbar while keeping native scroll (used for swipeable pill rows) */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* hover lift */
+  .smooth-hover {
+    transition: all 0.3s var(--ease-out);
+  }
+
+  .smooth-hover:hover {
+    transform: translateY(-6px) scale(1.02);
+  }
+
+  /* glow hover */
+  .glow-hover {
+    transition: all 0.3s var(--ease-out);
+  }
+
+  .glow-hover:hover {
+    box-shadow: 0 10px 40px rgba(99, 102, 241, 0.25);
+  }
+
+  /* =========================
+     ✨ STAR BURST SYSTEM (FIXED)
+  ========================= */
+
+  .star-burst {
+    position: relative;
+  }
+
+  .star {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    opacity: 0;
+    pointer-events: none;
+
+    /* 🔥 FIX: visible Cosmo gradient */
+    background: radial-gradient(
+      circle,
+      rgba(167, 139, 250, 1) 0%,   /* violet */
+      rgba(59, 130, 246, 0.9) 45%, /* blue */
+      transparent 75%
+    );
+
+    filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.8));
+  }
+
+  /* star positions */
+  .star-1 {
+    top: 10%;
+    left: -8px;
+    animation: starBurst1 5s ease-in-out infinite;
+  }
+
+  .star-2 {
+    top: 50%;
+    left: -12px;
+    animation: starBurst2 5s ease-in-out infinite 0.1s;
+  }
+
+  .star-3 {
+    top: 80%;
+    left: -6px;
+    animation: starBurst3 5s ease-in-out infinite 0.2s;
+  }
+
+  .star-4 {
+    top: 20%;
+    right: -8px;
+    animation: starBurst1 5s ease-in-out infinite 0.15s;
+  }
+
+  .star-5 {
+    top: 60%;
+    right: -12px;
+    animation: starBurst2 5s ease-in-out infinite 0.25s;
+  }
+}
+
+/* =========================
+   🎬 KEYFRAMES
+========================= */
+
+/* fade */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/* slide */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* pop */
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* float */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* attention nudge */
+@keyframes nudge {
+  0%, 85%, 100% {
+    transform: translateY(0);
+  }
+  88% {
+    transform: translateY(-3px);
+  }
+  92% {
+    transform: translateY(3px);
+  }
+  96% {
+    transform: translateY(-2px);
+  }
+}
+
+/* =========================
+   ✨ STAR BURST ANIMATIONS
+========================= */
+
+@keyframes starBurst1 {
+  0%, 85%, 100% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+  88% {
+    opacity: 1;
+  }
+  92% {
+    transform: translate(-14px, -14px) scale(1);
+  }
+  96% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-22px, -22px) scale(0.2);
+  }
+}
+
+@keyframes starBurst2 {
+  0%, 85%, 100% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+  88% {
+    opacity: 1;
+  }
+  92% {
+    transform: translate(-10px, 12px) scale(1);
+  }
+  96% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-18px, 18px) scale(0.2);
+  }
+}
+
+@keyframes starBurst3 {
+  0%, 85%, 100% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+  88% {
+    opacity: 1;
+  }
+  92% {
+    transform: translate(12px, -10px) scale(1);
+  }
+  96% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(20px, -20px) scale(0.2);
+  }
+}
+
+/* =========================
+   🤖 AI SPARKLE
+========================= */
+
+@keyframes aiSparkle {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0.9;
+  }
+
+  15% {
+    transform: scale(1.18) rotate(-10deg);
+    opacity: 1;
+  }
+
+  30% {
+    transform: scale(0.95) rotate(10deg);
+    opacity: 0.85;
+  }
+
+  45% {
+    transform: scale(1.12) rotate(-6deg);
+    opacity: 1;
+  }
+
+  60% {
+    transform: scale(1) rotate(4deg);
+    opacity: 0.95;
+  }
+
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@layer utilities {
+  .animate-ai-sparkle {
+    animation: aiSparkle 2.8s ease-in-out infinite;
+    transform-origin: center;
+  }
+}
+
+/* =========================
+   🔮 AI ORB
+   Used by AIOrb.tsx (the "Just Ask" tab icon) — a small rotating gradient
+   circle in the style of ChatGPT/Gemini/Siri's voice-mode indicators,
+   built as two stacked animations rather than a hosted gif so it stays
+   crisp at icon size with no external asset to load.
+========================= */
+
+@keyframes aiOrbSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes aiOrbPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+@layer utilities {
+  .animate-ai-orb-spin {
+    animation: aiOrbSpin 3s linear infinite;
+  }
+
+  .animate-ai-orb-pulse {
+    animation: aiOrbPulse 2.4s ease-in-out infinite;
+    transform-origin: center;
+  }
+}
