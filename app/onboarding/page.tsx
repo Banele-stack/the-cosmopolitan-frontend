@@ -44,11 +44,11 @@ export default function OnboardingPage() {
       <div className="relative w-full max-w-md">
         {/* Header */}
         <div className="mb-10 text-center">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 shadow-xl">
-            <Sparkles className="text-white" size={30} />
+          <div className="mx-auto mb-5 flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 shadow-xl">
+            <Sparkles className="text-white" size={26} />
           </div>
 
-          <h1 className="text-4xl font-extrabold tracking-tight text-gray-900">
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900">
             Welcome 👋
           </h1>
 

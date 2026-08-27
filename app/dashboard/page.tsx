@@ -212,7 +212,7 @@ export default function DashboardPage() {
             <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg">
               <TrendingUp size={24} className="text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
               Welcome Back!
             </h1>
             <p className="mt-1 text-gray-500">
@@ -249,7 +249,7 @@ export default function DashboardPage() {
                 <p className="text-sm font-medium text-gray-500">
                   Total Businesses
                 </p>
-                <h2 className="mt-2 text-4xl font-bold text-gray-900">
+                <h2 className="mt-2 text-3xl md:text-4xl font-bold text-gray-900">
                   {dashboard.businesses.length}
                 </h2>
                 <p className="mt-1 text-sm text-gray-400">
@@ -275,7 +275,7 @@ export default function DashboardPage() {
                 <p className="text-sm font-medium text-gray-500">
                   Total Rooms
                 </p>
-                <h2 className="mt-2 text-4xl font-bold text-gray-900">
+                <h2 className="mt-2 text-3xl md:text-4xl font-bold text-gray-900">
                   {dashboard.rooms.length}
                 </h2>
                 <p className="mt-1 text-sm text-gray-400">
@@ -301,7 +301,7 @@ export default function DashboardPage() {
                 <p className="text-sm font-medium text-gray-500">
                   Total Piece Jobs
                 </p>
-                <h2 className="mt-2 text-4xl font-bold text-gray-900">
+                <h2 className="mt-2 text-3xl md:text-4xl font-bold text-gray-900">
                   {dashboard.gigs.length}
                 </h2>
                 <p className="mt-1 text-sm text-gray-400">

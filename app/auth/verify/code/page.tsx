@@ -105,7 +105,7 @@ function VerifyCodeForm() {
       <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-blue-300/20 blur-3xl" />
       <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-indigo-300/20 blur-3xl" />
 
-      <div className="relative w-full max-w-md rounded-3xl bg-white/70 p-8 shadow-2xl backdrop-blur-xl">
+      <div className="relative w-full max-w-md rounded-3xl bg-white/70 p-5 sm:p-8 shadow-2xl backdrop-blur-xl">
         {/* Without this, arriving here mid-flow is a dead end short of
             editing the URL. */}
         <Link
@@ -115,23 +115,23 @@ function VerifyCodeForm() {
           ← Continue browsing
         </Link>
 
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600">
+        <div className="mx-auto flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600">
 
           {isEmail ? (
             <Mail
               className="text-white"
-              size={30}
+              size={26}
             />
           ) : (
             <Smartphone
               className="text-white"
-              size={30}
+              size={26}
             />
           )}
 
         </div>
 
-        <h1 className="mt-6 text-center text-3xl font-black">
+        <h1 className="mt-6 text-center text-2xl md:text-3xl font-black">
           Enter verification code
         </h1>
 
@@ -152,13 +152,13 @@ function VerifyCodeForm() {
             }
             placeholder="123456"
             maxLength={6}
-            className="w-full rounded-2xl border border-gray-200 bg-white px-5 py-4 text-center text-3xl font-bold tracking-[0.5em] outline-none transition focus:border-blue-500"
+            className="w-full rounded-2xl border border-gray-200 bg-white px-3 py-3 md:px-5 md:py-4 text-center text-2xl md:text-3xl font-bold tracking-[0.4em] md:tracking-[0.5em] outline-none transition focus:border-blue-500"
           />
 
           <button
             type="submit"
             disabled={loading}
-            className="mt-6 w-full rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 py-4 font-semibold text-white shadow-lg transition hover:scale-[1.02] disabled:opacity-60"
+            className="mt-6 w-full rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 py-3 md:py-4 text-sm md:text-base font-semibold text-white shadow-lg transition hover:scale-[1.02] disabled:opacity-60"
           >
             {loading
               ? "Verifying..."

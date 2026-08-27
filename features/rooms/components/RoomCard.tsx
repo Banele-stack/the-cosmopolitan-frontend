@@ -47,6 +47,9 @@ export default function RoomCard({
   const formatMoney = (value: number) =>
     new Intl.NumberFormat("en-ZA").format(value);
 
+  const hasBathrooms =
+    typeof room.bathrooms === "number" && room.bathrooms > 0;
+
   function getReportStatus(count: number): { tone: "green" | "amber" | "red" } {
     if (count === 0) return { tone: "green" };
     if (count <= 2) return { tone: "amber" };
@@ -65,8 +68,11 @@ export default function RoomCard({
 
   const chips: Chip[] = [
     { key: "bed", icon: BedDouble, label: `${room.bedrooms} Bedroom${room.bedrooms > 1 ? "s" : ""}` },
-    { key: "bath", icon: Bath, label: `${room.bathrooms} Bathroom${room.bathrooms > 1 ? "s" : ""}` },
   ];
+
+  if (hasBathrooms) {
+    chips.push({ key: "bath", icon: Bath, label: `${room.bathrooms} Bathroom${room.bathrooms! > 1 ? "s" : ""}` });
+  }
 
   if (hasValidSize) chips.push({ key: "size", icon: Ruler, label: `${room.size} m²` });
 
@@ -121,10 +127,13 @@ export default function RoomCard({
       <div className="group bg-white/95 rounded-3xl overflow-hidden border border-white/50 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
 
 {/* MEDIA GRID — layout adapts to how many photos/videos there
-    actually are, instead of always reserving 4 cells. */}
+    actually are. A listing with none skips this block entirely rather
+    than showing a placeholder graphic. */}
+{media.length > 0 && (
 <div className="relative overflow-hidden h-60">
   <MediaGrid media={media} alt={room.name} />
 </div>
+)}
 
         {/* CONTENT */}
         <div className="p-5">
@@ -136,7 +145,7 @@ export default function RoomCard({
 
 <div className="mt-3 flex items-center justify-between gap-3">
   <div>
-    <p className="text-2xl font-bold text-violet-700">
+    <p className="text-xl font-bold text-violet-700">
       R{formatMoney(room.price)}
     </p>
     <p className="text-xs text-gray-500">
@@ -193,7 +202,9 @@ export default function RoomCard({
               </p>
 
               <p className="text-xs text-gray-400">
-                Deposit: R{formatMoney(room.deposit)}
+                {typeof room.deposit === "number"
+                  ? `Deposit: R${formatMoney(room.deposit)}`
+                  : "Contact landlord for deposit"}
               </p>
             </div>
 

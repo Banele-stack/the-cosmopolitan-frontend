@@ -8,7 +8,7 @@ type ViewMode = "rooms" | "businesses" | "gigs" | "askAi";
 // Bump this if the steps change meaningfully — old visitors who already
 // dismissed the tour won't see a re-run just because copy changed, but a
 // genuinely new step set (a new key) reaches everyone once.
-const STORAGE_KEY = "northstar_onboarding_v3";
+const STORAGE_KEY = "northstar_onboarding_v4";
 
 // Same icon+label used on the real tabs (Navbar/MobileTabs), reused here as
 // a small badge on every step. The spotlight ring alone doesn't say which
@@ -36,21 +36,21 @@ interface Step {
 const STEPS: Step[] = [
   {
     target: '[data-tour="content-tabs"]',
-    view: "rooms",
+    view: "businesses",
     title: "Start here",
-    body: "Switch between Properties, Businesses, and Piece Jobs any time — this is how you browse.",
-  },
-  {
-    target: '[data-tour="room-filters"]',
-    view: "rooms",
-    title: "Find a place to rent",
-    body: "Search by area and price up top, or tap a quick filter like WiFi, Parking, or Pet Friendly to narrow it down.",
+    body: "Switch between Businesses, Properties, and Piece Jobs any time — this is how you browse.",
   },
   {
     target: '[data-tour="business-filters"]',
     view: "businesses",
     title: "Browse local businesses",
     body: "Filter by category and price, or toggle Open Now, Delivery, or Nearby to find exactly what you need.",
+  },
+  {
+    target: '[data-tour="room-filters"]',
+    view: "rooms",
+    title: "Find a place to rent",
+    body: "Search by area and price up top, or tap a quick filter like WiFi, Parking, or Pet Friendly to narrow it down.",
   },
   {
     target: '[data-tour="gig-type"]',
@@ -105,9 +105,9 @@ export default function OnboardingTour({ view, setView, onActiveChange }: Onboar
   const finish = useCallback(() => {
     setActive(false);
     // The tour's last step leaves the app on Ask AI — land back on
-    // Properties instead, since that's the actual home tab, not wherever
+    // Businesses instead, since that's the actual home tab, not wherever
     // the walkthrough happened to end.
-    setView("rooms");
+    setView("businesses");
     try {
       localStorage.setItem(STORAGE_KEY, "1");
     } catch {

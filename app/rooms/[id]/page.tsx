@@ -280,8 +280,9 @@ export default function RoomPage({
           />
         </div>
 
-        {/* IMAGE */}
-        {/* GALLERY */}
+        {/* GALLERY — skipped entirely when this listing has no photos,
+            rather than showing a placeholder graphic. */}
+        {room.images.length > 0 && (
         <div className="bg-white rounded-2xl p-2 shadow-sm">
           <div className="relative">
 
@@ -330,12 +331,15 @@ export default function RoomPage({
               </>
             )}
 
-            <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
-              {selectedImage + 1} / {room.images.length}
-            </div>
+            {room.images.length > 0 && (
+              <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
+                {selectedImage + 1} / {room.images.length}
+              </div>
+            )}
           </div>
 
           {/* Thumbnail Scroll */}
+          {room.images.length > 0 && (
           <div className="flex gap-2 overflow-x-auto mt-3 pb-1">
             {processedImages.map((image, index) => (
               <button
@@ -359,7 +363,9 @@ export default function RoomPage({
               </button>
             ))}
           </div>
+          )}
         </div>
+        )}
 
         {/* CONTENT */}
         <div className="grid lg:grid-cols-[1fr_320px] gap-6 mt-6">
@@ -418,7 +424,7 @@ export default function RoomPage({
 
             {/* ABOUT */}
             <div className="mt-8">
-              <h2 className="text-2xl font-bold mb-3">
+              <h2 className="font-semibold text-lg mb-3">
                 About this property
               </h2>
 
@@ -457,7 +463,7 @@ export default function RoomPage({
                     </div>
                   )}
 
-                  {room.bathrooms !== undefined && (
+                  {typeof room.bathrooms === "number" && (
                     <div className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 text-sm">
                       <Bath size={16} />
                       {room.bathrooms} Bathroom{room.bathrooms !== 1 && "s"}
@@ -471,7 +477,7 @@ export default function RoomPage({
                     </div>
                   )}
 
-                  {room.deposit > 0 && (
+                  {typeof room.deposit === "number" && room.deposit > 0 && (
                     <div className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 text-sm">
                       💰 Deposit R{formatMoney(room.deposit)}
                     </div>

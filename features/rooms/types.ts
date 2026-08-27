@@ -33,7 +33,11 @@ export type Room = {
   whatsappNumber: string | null;
 
   bedrooms: number;
-  bathrooms: number;
+  // Nullable — real listings sourced from a landlord's own published info
+  // (rather than the self-serve create form) don't always state these; the
+  // UI falls back to "Contact landlord for details" rather than requiring
+  // them. See room.entity.ts.
+  bathrooms: number | null;
   size: number | null;
 
   furnished: boolean;
@@ -59,9 +63,9 @@ export type Room = {
   noiseRule?: string;
 
   propertyType: string;
-  availableFrom: string;
-  deposit: number;
-  leaseTerm: string;
+  availableFrom: string | null;
+  deposit: number | null;
+  leaseTerm: string | null;
 
   reportCount: number;
   reviews: Review[];

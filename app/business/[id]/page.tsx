@@ -263,7 +263,9 @@ if (!business) {
           />
         </div>
 
-        {/* ✅ HERO IMAGE GALLERY (UPDATED) */}
+        {/* HERO IMAGE GALLERY — skipped entirely when this listing has no
+            photos, rather than showing a placeholder graphic. */}
+        {business.images.length > 0 && (
         <div className="bg-white rounded-2xl p-2 shadow-sm">
           <div className="relative">
 
@@ -315,9 +317,11 @@ if (!business) {
             )}
 
             {/* COUNTER */}
-            <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
-              {selectedImage + 1} / {business.images.length}
-            </div>
+            {business.images.length > 0 && (
+              <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
+                {selectedImage + 1} / {business.images.length}
+              </div>
+            )}
           </div>
 
           {/* THUMBNAILS */}
@@ -345,6 +349,7 @@ if (!business) {
             ))}
           </div>
         </div>
+        )}
 
         {/* CONTENT */}
         <div className="grid lg:grid-cols-[1fr_320px] gap-6 mt-6">

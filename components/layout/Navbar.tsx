@@ -39,8 +39,8 @@ export default function Navbar({ view, onNavigate }: NavbarProps) {
   // icon is omitted for "askAi" — that tab renders the animated AIOrb
   // instead of a static lucide icon (see the map below).
   const navItems: { label: string; value: ViewMode; icon?: typeof Home }[] = [
-    { label: "Properties", value: "rooms", icon: Home },
     { label: "Businesses", value: "businesses", icon: Building2 },
+    { label: "Properties", value: "rooms", icon: Home },
     { label: "Piece Jobs", value: "gigs", icon: HandHelping },
     // Was "Ask AI" — "AI" is comfortable shorthand for us, but it can read
     // as intimidating or meaningless jargon to someone who's never
@@ -94,9 +94,9 @@ export default function Navbar({ view, onNavigate }: NavbarProps) {
     // logo and the (deliberately always-labelled, see below) Account
     // button both in this same row, there isn't room for two full text
     // buttons on a real 375px phone.
-    className="flex h-11 items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-3 text-sm font-semibold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg active:scale-95 sm:px-4"
+    className="flex h-9 sm:h-11 items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-2.5 text-sm font-semibold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg active:scale-95 sm:px-4"
   >
-    <Plus size={18} className="sm:hidden" />
+    <Plus size={16} className="sm:hidden" />
     <span className="hidden sm:inline">Add Service</span>
   </Link>
 )}
@@ -110,9 +110,9 @@ export default function Navbar({ view, onNavigate }: NavbarProps) {
           <Link
             href={isLoggedIn ? "/auth/account" : "/auth"}
             data-tour={!isLoggedIn ? "add-listing" : undefined}
-            className="flex h-11 shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-violet-500 to-blue-500 pl-3 pr-4 text-sm font-semibold text-white shadow-lg transition-all hover:scale-105 active:scale-90"
+            className="flex h-9 sm:h-11 shrink-0 items-center gap-1.5 sm:gap-2 rounded-full bg-gradient-to-r from-violet-500 to-blue-500 pl-2.5 pr-3 sm:pl-3 sm:pr-4 text-xs sm:text-sm font-semibold text-white shadow-lg transition-all hover:scale-105 active:scale-90"
           >
-            {isLoggedIn ? <User size={18} /> : <Plus size={18} />}
+            {isLoggedIn ? <User size={15} className="shrink-0" /> : <Plus size={15} className="shrink-0" />}
             {isLoggedIn ? "Account" : "Sign Up"}
           </Link>
         </div>

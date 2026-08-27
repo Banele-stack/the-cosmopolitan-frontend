@@ -9,18 +9,20 @@ import { NearbyMeta, PaginationMeta } from "@/types/pagination";
 import { formatNearbyLabel } from "@/lib/format-nearby-label";
 import { formatRoomsHeading } from "@/lib/format-listing-heading";
 import { ROOM_PRICE_RANGE_OPTIONS } from "@/features/rooms/constants/price-range.constants";
+import { DetectedLocation } from "@/lib/hooks/useAutoDetectLocation";
 
 const ROOMS_PAGE_LIMIT = 10;
 
 interface FeaturedListingsProps {
-  // Auto-detected area name (e.g. "Cosmo City") from useAutoDetectLocation,
-  // shown only as a fallback label — a manually-picked `location` always
-  // wins. See useAutoDetectLocation for why the two are kept separate.
-  detectedArea?: string | null;
+  // Auto-detected position from useAutoDetectLocation — `area` labels the
+  // "Near Me" default when no location has been manually picked, and
+  // `lat`/`lng` drive that same default's actual query (see the fetch
+  // effect below). A manually-picked `location`/coordinates always win.
+  geo: DetectedLocation;
 }
 
 export default function FeaturedListings({
-  detectedArea,
+  geo,
 }: FeaturedListingsProps) {
  const {
   location,
@@ -55,32 +57,56 @@ export default function FeaturedListings({
   }
 
   useEffect(() => {
+    // No manual location picked yet — hold off fetching until geolocation
+    // has actually settled (resolved or given up), so the first fetch is
+    // already the right one instead of an unfiltered "everything" query
+    // that then gets silently swapped for a filtered one. See
+    // useAutoDetectLocation for why.
+    const hasManualLocation = Boolean(location) || lat != null;
+    if (!hasManualLocation && geo.status === "pending") return;
+
+    const effectiveLat = lat ?? geo.lat ?? undefined;
+    const effectiveLng = lng ?? geo.lng ?? undefined;
+
+    // Rapidly toggling tags/price (or a location change landing mid-flight)
+    // fires a new request per change with no debounce, and those requests
+    // can resolve out of order — an earlier, now-superseded fetch can land
+    // after the latest one and silently overwrite it. `cancelled` is set by
+    // the cleanup function whenever a newer effect run supersedes this one,
+    // so a stale response is dropped instead of clobbering the UI.
+    let cancelled = false;
+
     const fetchRooms = async () => {
       try {
         setLoading(true);
 
 const data = await getRooms({
   location,
-   lat: lat ?? undefined,
-  lng: lng ?? undefined,
+   lat: effectiveLat,
+  lng: effectiveLng,
   filter: priceRange,
   activeTags,
   page,
   limit: ROOMS_PAGE_LIMIT,
 });
 
+        if (cancelled) return;
         setRooms(data.data);
         setPagination(data.pagination);
         setNearby(data.nearby ?? null);
       } catch (err) {
-        console.error(err);
+        if (!cancelled) console.error(err);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchRooms();
-  }, [searchTrigger, lat, lng,priceRange,
+
+    return () => {
+      cancelled = true;
+    };
+  }, [searchTrigger, location, lat, lng, geo.status, geo.lat, geo.lng, priceRange,
   activeTags, page]);
 
   function getDistanceKm(
@@ -114,7 +140,13 @@ const data = await getRooms({
   }
 
   const enrichedRooms = useMemo(() => {
-    if (!lat || !lng) return rooms;
+    // Same fallback as the fetch above: a manual pick wins, otherwise use
+    // wherever geolocation resolved — so the per-card distance badge
+    // matches what actually drove the "Near Me" results, not just the
+    // (rarer) case where the user typed a suburb.
+    const distanceLat = lat ?? geo.lat;
+    const distanceLng = lng ?? geo.lng;
+    if (!distanceLat || !distanceLng) return rooms;
 
     return rooms
       .map((room) => {
@@ -131,8 +163,8 @@ const data = await getRooms({
         return {
           ...room,
           distance: getDistanceKm(
-            lat,
-            lng,
+            distanceLat,
+            distanceLng,
             room.location.lat,
             room.location.lng
           ),
@@ -144,7 +176,7 @@ const data = await getRooms({
 
         return a.distance - b.distance;
       });
-  }, [rooms, lat, lng]);
+  }, [rooms, lat, lng, geo.lat, geo.lng]);
 
   if (loading) {
     return (
@@ -175,7 +207,7 @@ const data = await getRooms({
           <p className="text-gray-500 mt-2">
             {formatNearbyLabel(
               "Rooms",
-              location || detectedArea || "you",
+              location || geo.area || "you",
               nearby,
               enrichedRooms.length
             )}

@@ -64,6 +64,21 @@ export default function Footer() {
             Users are responsible for verifying information before making decisions
             or entering agreements.
           </p>
+          {/* Required by the Open Database License for business listings
+              sourced from OpenStreetMap — do not remove without swapping
+              the underlying data source. See /scripts/seed-osm-*.ts. */}
+          <p className="mt-3 text-xs text-gray-400 max-w-3xl mx-auto">
+            Some business listings include data from{' '}
+            <a
+              href="https://www.openstreetmap.org/copyright"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-gray-600"
+            >
+              OpenStreetMap
+            </a>{' '}
+            contributors, available under the Open Database License (ODbL).
+          </p>
         </div>
 
       </div>

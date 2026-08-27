@@ -432,14 +432,14 @@ const response = await fetch(
       <div className="absolute left-1/2 top-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-300/10 blur-3xl" />
 
       <div className="relative mx-auto max-w-2xl">
-        <div className="rounded-3xl border border-white/40 bg-white/70 p-8 shadow-2xl backdrop-blur-xl">
+        <div className="rounded-3xl border border-white/40 bg-white/70 p-5 sm:p-8 shadow-2xl backdrop-blur-xl">
           {/* Header */}
           <div className="mb-8 text-center">
-            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 shadow-xl">
-              <BedDouble size={30} className="text-white" />
+            <div className="mx-auto mb-5 flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 shadow-xl">
+              <BedDouble size={26} className="text-white" />
             </div>
 
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
               List Your Property
             </h1>
 

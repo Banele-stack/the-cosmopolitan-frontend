@@ -156,7 +156,7 @@ export default function BusinessSearchPanel() {
                 }
               }}
               placeholder="Search businesses..."
-              className="w-full h-12 md:h-14 pl-10 pr-4 rounded-xl bg-gray-50 border border-transparent hover:border-violet-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-100 outline-none transition-all text-sm"
+              className="w-full h-11 md:h-14 pl-10 pr-4 rounded-xl bg-gray-50 border border-transparent hover:border-violet-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-100 outline-none transition-all text-sm"
             />
           </div>
 
@@ -170,7 +170,7 @@ export default function BusinessSearchPanel() {
               setCoordinates(result.lat, result.lng);
             }}
             placeholder="📍 Near Me — or search a suburb"
-            inputClassName="w-full h-12 md:h-14 pl-10 pr-4 rounded-xl bg-gray-50 border border-transparent hover:border-violet-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-100 outline-none transition-all text-sm"
+            inputClassName="w-full h-11 md:h-14 pl-10 pr-4 rounded-xl bg-gray-50 border border-transparent hover:border-violet-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-100 outline-none transition-all text-sm"
           />
 
           {/* FILTERS (price + open now / delivery / online / nearby / highly
@@ -183,7 +183,7 @@ export default function BusinessSearchPanel() {
               <button
                 type="button"
                 data-tour="business-filters"
-                className={`relative h-12 md:h-14 px-4 md:px-5 rounded-xl border flex items-center justify-center gap-2 text-sm font-medium transition-all ${
+                className={`relative h-11 md:h-14 px-3.5 md:px-5 rounded-xl border flex items-center justify-center gap-2 text-sm font-medium transition-all ${
                   activeSecondaryFilterCount > 0
                     ? "bg-violet-50 border-violet-300 text-violet-700"
                     : "bg-gray-50 border-transparent hover:border-violet-200 text-gray-700"
@@ -264,9 +264,9 @@ export default function BusinessSearchPanel() {
           {/* SEARCH BUTTON */}
           <button
             onClick={triggerSearch}
-            className="h-12 md:h-14 w-full md:w-auto md:px-7 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 text-white font-medium flex items-center justify-center gap-2 active:scale-95 transition shadow-lg hover:shadow-violet-500/30"
+            className="h-11 md:h-14 w-full md:w-auto md:px-7 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 text-white text-sm font-medium flex items-center justify-center gap-2 active:scale-95 transition shadow-lg hover:shadow-violet-500/30"
           >
-            <Search size={16} />
+            <Search size={15} />
             Search
           </button>
         </div>
@@ -310,14 +310,14 @@ export default function BusinessSearchPanel() {
                         active ? "" : category.name
                       )
                     }
-                    className={`flex flex-shrink-0 snap-start items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-300 active:scale-95 ${
+                    className={`flex flex-shrink-0 snap-start items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-300 active:scale-95 ${
                       active
                         ? "bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-lg shadow-violet-500/30"
                         : "bg-white border border-gray-200 text-gray-700 hover:border-violet-300 hover:text-violet-600 hover:shadow-sm"
                     }`}
                   >
                     <Icon
-                      size={15}
+                      size={14}
                       className={active ? "text-white" : "text-violet-500"}
                     />
                     {category.name}
@@ -329,7 +329,7 @@ export default function BusinessSearchPanel() {
                 <button
                   type="button"
                   onClick={() => setShowAllCategories((v) => !v)}
-                  className="flex flex-shrink-0 snap-start items-center gap-1 px-4 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap text-gray-500 border border-dashed border-gray-300 hover:border-violet-300 hover:text-violet-600 transition-all"
+                  className="flex flex-shrink-0 snap-start items-center gap-1 px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap text-gray-500 border border-dashed border-gray-300 hover:border-violet-300 hover:text-violet-600 transition-all"
                 >
                   {showAllCategories ? (
                     <>
@@ -391,7 +391,7 @@ export default function BusinessSearchPanel() {
             <button
               type="button"
               onClick={clearFilters}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs text-gray-500 border border-transparent hover:border-red-200 hover:bg-red-50 hover:text-red-600 transition"
+              className="flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs text-gray-500 border border-transparent hover:border-red-200 hover:bg-red-50 hover:text-red-600 transition"
             >
               <X size={12} />
               Clear all filters

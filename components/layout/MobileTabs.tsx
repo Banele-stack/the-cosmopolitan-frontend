@@ -48,31 +48,31 @@ export default function MobileTabs({
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-lg">
-      <div data-tour="content-tabs" className="flex h-16 gap-1 px-1 py-1">
-        <button
-          onClick={() => setView("rooms")}
-          className={`flex-1 flex flex-col items-center justify-center gap-0.5 rounded-xl transition active:scale-95 ${tabClass("rooms")}`}
-        >
-          <Home size={20} />
-          <span className="text-[12px] font-medium">Properties</span>
-        </button>
-
+      <div data-tour="content-tabs" className="flex h-14 gap-1 px-1 py-1">
         <button
           onClick={() => setView("businesses")}
           className={`flex-1 flex flex-col items-center justify-center gap-0.5 rounded-xl transition active:scale-95 ${tabClass("businesses")}`}
         >
-          <Building2 size={20} />
-          <span className="text-[12px] font-medium text-center leading-tight">
+          <Building2 size={18} />
+          <span className="text-[10px] font-medium text-center leading-tight">
             Local Businesses
           </span>
+        </button>
+
+        <button
+          onClick={() => setView("rooms")}
+          className={`flex-1 flex flex-col items-center justify-center gap-0.5 rounded-xl transition active:scale-95 ${tabClass("rooms")}`}
+        >
+          <Home size={18} />
+          <span className="text-[10px] font-medium">Properties</span>
         </button>
 
         <button
           onClick={() => setView("gigs")}
           className={`flex-1 flex flex-col items-center justify-center gap-0.5 rounded-xl transition active:scale-95 ${tabClass("gigs")}`}
         >
-          <HandHelping size={20} />
-          <span className="text-[12px] font-medium whitespace-nowrap">Piece Jobs</span>
+          <HandHelping size={18} />
+          <span className="text-[10px] font-medium whitespace-nowrap">Piece Jobs</span>
         </button>
 
         <button
@@ -80,8 +80,8 @@ export default function MobileTabs({
   data-tour="ask-ai"
   className={`flex-1 flex flex-col items-center justify-center gap-0.5 rounded-xl transition active:scale-95 ${tabClass("askAi")}`}
 >
-  <AIOrb size={20} />
-  <span className="text-[12px] font-medium">
+  <AIOrb size={18} />
+  <span className="text-[10px] font-medium">
     Just Ask
   </span>
 </button>

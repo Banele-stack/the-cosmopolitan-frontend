@@ -119,7 +119,7 @@ function VerifyContent() {
       <div className="absolute -left-20 top-0 h-72 w-72 rounded-full bg-blue-300/20 blur-3xl" />
       <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-indigo-300/20 blur-3xl" />
 
-      <div className="relative w-full max-w-md rounded-3xl bg-white/70 p-8 shadow-2xl backdrop-blur-xl">
+      <div className="relative w-full max-w-md rounded-3xl bg-white/70 p-5 sm:p-8 shadow-2xl backdrop-blur-xl">
         {/* Without this, arriving here mid-flow (e.g. via a "verify to
             continue" redirect) is a dead end short of editing the URL. */}
         <Link
@@ -129,14 +129,14 @@ function VerifyContent() {
           ← Continue browsing
         </Link>
 
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600">
+        <div className="mx-auto flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600">
           <ShieldCheck
             className="text-white"
-            size={30}
+            size={26}
           />
         </div>
 
-        <h1 className="mt-6 text-center text-3xl font-black">
+        <h1 className="mt-6 text-center text-2xl md:text-3xl font-black">
           Verify your account
         </h1>
 

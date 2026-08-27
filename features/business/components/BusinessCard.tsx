@@ -47,9 +47,15 @@ export default function BusinessCard({
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-  function timeToMinutes(t: string) {
-    const [h, m] = t.split(":").map(Number);
-    return h * 60 + m;
+  // Returns null (rather than throwing) for anything that isn't "HH:MM" —
+  // operatingHours can hold free text like "Contact for hours" for
+  // listings imported without machine-parseable hours (e.g. OSM-sourced
+  // businesses), not just a time range.
+  function timeToMinutes(t?: string): number | null {
+    if (!t) return null;
+    const match = t.match(/^(\d{1,2}):(\d{2})$/);
+    if (!match) return null;
+    return Number(match[1]) * 60 + Number(match[2]);
   }
 
   let isOpen = false;
@@ -60,6 +66,8 @@ export default function BusinessCard({
     const closeMinutes = timeToMinutes(close);
 
     isOpen =
+      openMinutes !== null &&
+      closeMinutes !== null &&
       currentMinutes >= openMinutes &&
       currentMinutes <= closeMinutes;
   }
@@ -86,38 +94,73 @@ export default function BusinessCard({
         <div className="group bg-white/95 rounded-3xl overflow-hidden border border-white/50 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
 
           {/* MEDIA GRID — layout adapts to how many photos/videos there
-              actually are, instead of always reserving 4 cells. */}
-          <div className="relative h-60 overflow-hidden">
-            <MediaGrid media={media} alt={business.name} />
+              actually are. A listing with none skips this block entirely
+              rather than showing a placeholder graphic — the category/
+              rating/verified info that would normally overlay the photo
+              moves into the text content below instead (see there). */}
+          {media.length > 0 && (
+            <div className="relative h-60 overflow-hidden">
+              <MediaGrid media={media} alt={business.name} />
 
-            {/* Category */}
-            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-md text-xs font-semibold text-violet-700 z-10">
-              {categoryLabel}
+              {/* Category */}
+              <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-md text-xs font-semibold text-violet-700 z-10">
+                {categoryLabel}
+              </div>
+
+              {/* Rating — omitted entirely (not shown as "0") for a
+                  business with no reviews yet. */}
+              {business.rating > 0 && (
+                <div className="absolute top-4 right-4 bg-black/80 text-white px-3 py-2 rounded-full flex items-center gap-1 z-10">
+                  <Star size={14} className="fill-yellow-400 text-yellow-400" />
+                  <span className="text-sm font-medium">{business.rating}</span>
+                </div>
+              )}
+
+              {/* Verified */}
+              {business.ownerVerified && (
+                <div className="absolute bottom-3 right-3 z-10">
+                  <Badge tone="green">
+                    <BadgeCheck size={12} />
+                    Phone Verified
+                  </Badge>
+                </div>
+              )}
             </div>
+          )}
 
-            {/* Rating */}
-            <div className="absolute top-4 right-4 bg-black/80 text-white px-3 py-2 rounded-full flex items-center gap-1 z-10">
-              <Star size={14} className="fill-yellow-400 text-yellow-400" />
-              <span className="text-sm font-medium">{business.rating}</span>
-            </div>
+          {/* CONTENT */}
+          <div className="p-5">
 
-            {/* Verified */}
-            {business.ownerVerified && (
-              <div className="absolute bottom-3 right-3 z-10">
+            {/* No photo: category/rating/verified normally shown over the
+                image move up here instead, so a text-only listing still
+                surfaces them. */}
+            {media.length === 0 && (
+              <div className="flex items-center justify-between mb-3">
+                <span className="bg-violet-50 px-3 py-1.5 rounded-full text-xs font-semibold text-violet-700">
+                  {categoryLabel}
+                </span>
+
+                {business.rating > 0 && (
+                  <div className="flex items-center gap-1 text-gray-700">
+                    <Star size={14} className="fill-yellow-400 text-yellow-400" />
+                    <span className="text-sm font-medium">{business.rating}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <h3 className="font-bold text-lg line-clamp-1">
+              {business.name}
+            </h3>
+
+            {media.length === 0 && business.ownerVerified && (
+              <div className="mt-1.5">
                 <Badge tone="green">
                   <BadgeCheck size={12} />
                   Phone Verified
                 </Badge>
               </div>
             )}
-          </div>
-
-          {/* CONTENT */}
-          <div className="p-5">
-
-            <h3 className="font-bold text-lg line-clamp-1">
-              {business.name}
-            </h3>
 
             {business.credential && (
               <div className="mt-1.5 flex items-center gap-1 text-amber-700">

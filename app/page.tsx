@@ -46,7 +46,7 @@ export default function Home() {
   );
   const [gigsPage, setGigsPage] = useState(1);
   const [gigsNearby, setGigsNearby] = useState<NearbyMeta | null>(null);
-  const [view, setView] = useState<ViewMode>("rooms");
+  const [view, setView] = useState<ViewMode>("businesses");
   const [tourActive, setTourActive] = useState(false);
   const [showSafetyTips, setShowSafetyTips] = useState(false);
   const tourWasActive = useRef(false);
@@ -65,7 +65,7 @@ export default function Home() {
     }
   };
 
-  const detectedArea = useAutoDetectLocation();
+  const geo = useAutoDetectLocation();
 
  const {
   location,
@@ -114,12 +114,12 @@ useEffect(() => {
 }, []);
 
 // Keeps the URL's ?view= in sync with the current tab, so a refresh lands
-// back on the same tab instead of resetting to Properties (the effect
+// back on the same tab instead of resetting to Businesses (the effect
 // above is what reads it back on the next load). Skips its very first run
 // — without that guard it would fire during the initial render (view is
-// still the "rooms" default then, since the URL-reading effect above
+// still the "businesses" default then, since the URL-reading effect above
 // hasn't applied its setView yet) and briefly stomp a real ?view= from the
-// address bar back to "rooms" before self-correcting a moment later.
+// address bar back to "businesses" before self-correcting a moment later.
 const skippedInitialUrlSync = useRef(false);
 useEffect(() => {
   if (!skippedInitialUrlSync.current) {
@@ -133,10 +133,11 @@ useEffect(() => {
 // not wherever the previous tab happened to be scrolled to. Also covers
 // arriving here via the browser's Back button (e.g. from a listing detail
 // page): that remounts this component fresh, `view` goes from its
-// "rooms" default to whatever the URL says, and this same effect fires —
-// with ScrollRestorationManager turning off the browser's own automatic
-// scroll restoration, this explicit reset is what actually decides where
-// the page lands, instead of racing an unpredictable native restore.
+// "businesses" default to whatever the URL says, and this same effect
+// fires — with ScrollRestorationManager turning off the browser's own
+// automatic scroll restoration, this explicit reset is what actually
+// decides where the page lands, instead of racing an unpredictable native
+// restore.
 useEffect(() => {
   window.scrollTo(0, 0);
 }, [view]);
@@ -144,7 +145,7 @@ useEffect(() => {
 // Belt-and-braces: guarantees a top-of-page landing on the very first
 // mount regardless of whether the effect above happens to fire (it only
 // fires on `view` *changing* — if the URL's ?view= already matches the
-// default "rooms" state, setView() is a no-op and that effect never
+// default "businesses" state, setView() is a no-op and that effect never
 // runs).
 useEffect(() => {
   window.scrollTo(0, 0);
@@ -197,14 +198,35 @@ useEffect(() => {
 useEffect(() => {
   if (view !== "businesses") return;
 
+  // No manual location picked yet — this is the default "Near Me" state.
+  // Hold off fetching until geolocation has actually settled (resolved or
+  // given up), so the first fetch that happens is already the right one
+  // instead of an unfiltered "everything" query that then gets silently
+  // swapped for a filtered one. See useAutoDetectLocation for why.
+  const hasManualLocation = Boolean(location) || lat != null;
+  if (!hasManualLocation && geo.status === "pending") return;
+
+  const effectiveLat = lat ?? geo.lat ?? undefined;
+  const effectiveLng = lng ?? geo.lng ?? undefined;
+
+  // Typing in the search box (or clicking filters in quick succession)
+  // fires one request per change with no debounce, and those requests can
+  // resolve out of order — e.g. the very first, unfiltered "all businesses"
+  // fetch can land *after* a later "search=shell" fetch and silently
+  // overwrite it. `cancelled` is flipped by the cleanup function whenever a
+  // newer effect run supersedes this one, so a stale response is dropped
+  // instead of clobbering the UI with results for a query that's no longer
+  // current.
+  let cancelled = false;
+
   const fetchBusinesses = async () => {
     try {
       setLoading(true);
 
 const data = await getBusinesses({
   location,
-   lat: lat ?? undefined,
-  lng: lng ?? undefined,
+   lat: effectiveLat,
+  lng: effectiveLng,
   categorySlug,
   subcategorySlug,
   search,
@@ -218,23 +240,31 @@ const data = await getBusinesses({
   limit: BUSINESSES_PAGE_LIMIT,
 });
 
+      if (cancelled) return;
       setBusinesses(data.data);
       setBusinessesPagination(data.pagination);
       setBusinessesNearby(data.nearby ?? null);
     } catch (error) {
-      console.error("Failed to fetch businesses:", error);
+      if (!cancelled) console.error("Failed to fetch businesses:", error);
     } finally {
-      setLoading(false);
+      if (!cancelled) setLoading(false);
     }
   };
 
   fetchBusinesses();
+
+  return () => {
+    cancelled = true;
+  };
 }, [
   view,
   searchTrigger,
   location,
   lat,
   lng,
+  geo.status,
+  geo.lat,
+  geo.lng,
   categorySlug,
   subcategorySlug,
   search,
@@ -250,14 +280,24 @@ const data = await getBusinesses({
 useEffect(() => {
   if (view !== "gigs") return;
 
+  const hasManualGigLocation = Boolean(gigLocation) || gigLat != null;
+  if (!hasManualGigLocation && geo.status === "pending") return;
+
+  const effectiveGigLat = gigLat ?? geo.lat ?? undefined;
+  const effectiveGigLng = gigLng ?? geo.lng ?? undefined;
+
+  // Same stale-response guard as the businesses effect above — see its
+  // comment for why this is needed.
+  let cancelled = false;
+
   const fetchGigs = async () => {
     try {
       setLoading(true);
 
       const data = await getGigs({
         location: gigLocation,
-        lat: gigLat ?? undefined,
-        lng: gigLng ?? undefined,
+        lat: effectiveGigLat,
+        lng: effectiveGigLng,
         type: gigType || undefined,
         categorySlug: gigCategorySlug,
         subcategorySlug: gigSubcategorySlug,
@@ -266,23 +306,31 @@ useEffect(() => {
         limit: GIGS_PAGE_LIMIT,
       });
 
+      if (cancelled) return;
       setGigs(data.data);
       setGigsPagination(data.pagination);
       setGigsNearby(data.nearby ?? null);
     } catch (error) {
-      console.error("Failed to fetch gigs:", error);
+      if (!cancelled) console.error("Failed to fetch gigs:", error);
     } finally {
-      setLoading(false);
+      if (!cancelled) setLoading(false);
     }
   };
 
   fetchGigs();
+
+  return () => {
+    cancelled = true;
+  };
 }, [
   view,
   gigSearchTrigger,
   gigLocation,
   gigLat,
   gigLng,
+  geo.status,
+  geo.lat,
+  geo.lng,
   gigType,
   gigCategorySlug,
   gigSubcategorySlug,
@@ -314,7 +362,7 @@ useEffect(() => {
         <div className="max-w-6xl mx-auto px-4 py-10">
 
           {view === "rooms" && (
-            <FeaturedListings detectedArea={detectedArea} />
+            <FeaturedListings geo={geo} />
           )}
 
           {view === "businesses" && (
@@ -332,7 +380,7 @@ useEffect(() => {
                 <p className="text-gray-500 mt-2">
                   {formatNearbyLabel(
                     "Services",
-                    location || detectedArea || "you",
+                    location || geo.area || "you",
                     businessesNearby,
                     businesses.length
                   )}
@@ -385,7 +433,7 @@ useEffect(() => {
                   <p className="text-gray-500 mt-2">
                     {formatNearbyLabel(
                       "Piece jobs",
-                      gigLocation || detectedArea || "you",
+                      gigLocation || geo.area || "you",
                       gigsNearby,
                       gigs.length
                     )}

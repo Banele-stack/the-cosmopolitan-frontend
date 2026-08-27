@@ -41,7 +41,7 @@ export default function SearchBar() {
             setCoordinates(result.lat, result.lng);
           }}
           placeholder="📍 Near Me — or search a suburb"
-          inputClassName="w-full h-12 md:h-14 pl-10 pr-4 rounded-xl bg-gray-50 border border-transparent hover:border-violet-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-100 outline-none transition-all text-sm"
+          inputClassName="w-full h-11 md:h-14 pl-10 pr-4 rounded-xl bg-gray-50 border border-transparent hover:border-violet-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-100 outline-none transition-all text-sm"
         />
 
         {/* FILTER */}
@@ -55,7 +55,7 @@ export default function SearchBar() {
           <select
             value={priceRange}
             onChange={(e) => setPriceRange(e.target.value)}
-            className="w-full h-12 md:h-14 pl-10 pr-4 rounded-xl bg-gray-50 border border-transparent hover:border-violet-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-100 outline-none appearance-none transition-all text-sm"
+            className="w-full h-11 md:h-14 pl-10 pr-4 rounded-xl bg-gray-50 border border-transparent hover:border-violet-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-100 outline-none appearance-none transition-all text-sm"
           >
             <option value="">
               Any price
@@ -73,9 +73,9 @@ export default function SearchBar() {
 
         <button
           onClick={triggerSearch}
-          className="h-12 md:h-14 w-full md:w-auto md:px-7 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 text-white font-medium flex items-center justify-center gap-2 active:scale-95 transition shadow-lg hover:shadow-violet-500/30"
+          className="h-11 md:h-14 w-full md:w-auto md:px-7 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 text-white text-sm font-medium flex items-center justify-center gap-2 active:scale-95 transition shadow-lg hover:shadow-violet-500/30"
         >
-          <Search size={16} />
+          <Search size={15} />
           Search Rooms
         </button>
       </div>
@@ -93,7 +93,7 @@ export default function SearchBar() {
             <button
               key={tag}
               onClick={() => toggleTag(tag)}
-              className={`px-3 py-1.5 rounded-full text-xs transition ${
+              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs transition ${
                 active
                   ? "bg-violet-600 text-white"
                   : "bg-white border border-gray-200 text-gray-700 hover:border-violet-300 hover:text-violet-600"
@@ -108,7 +108,7 @@ export default function SearchBar() {
           <button
             type="button"
             onClick={clearFilters}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs text-gray-500 border border-transparent hover:border-red-200 hover:bg-red-50 hover:text-red-600 transition"
+            className="flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs text-gray-500 border border-transparent hover:border-red-200 hover:bg-red-50 hover:text-red-600 transition"
           >
             <X size={12} />
             Clear filters

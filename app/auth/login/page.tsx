@@ -113,7 +113,7 @@ if (onboarding.hasListings) {
             ✦ Cosmo Access
           </div>
 
-          <h1 className="mt-5 text-3xl font-black text-gray-900">
+          <h1 className="mt-5 text-2xl md:text-3xl font-black text-gray-900">
             Welcome Back
           </h1>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
 import { Play } from "lucide-react";
 
@@ -13,6 +13,12 @@ interface MediaGridProps {
   media: MediaGridItem[];
   alt: string;
   fallbackUrl?: string;
+  // Rendered instead of the generic placeholder graphic when a listing has
+  // no photos/videos at all (as opposed to a photo that failed to load,
+  // which still falls back to fallbackUrl). Lets callers show something
+  // more specific — e.g. a category icon — for listings that were never
+  // going to have a real photo, like bulk-imported directory data.
+  emptyState?: ReactNode;
 }
 
 // Autoplaying every card's video the moment the grid mounts is what was
@@ -79,8 +85,12 @@ function LazyAutoplayVideo({
 // A fixed 2x2 grid used to render regardless of count, leaving blank
 // placeholder cells for any listing with fewer than 4 images — the "empty
 // containers" bug.
-export default function MediaGrid({ media, alt, fallbackUrl = "/placeholder.svg" }: MediaGridProps) {
+export default function MediaGrid({ media, alt, fallbackUrl = "/placeholder.svg", emptyState }: MediaGridProps) {
   const [broken, setBroken] = useState<Record<number, boolean>>({});
+
+  if (!media.length && emptyState) {
+    return <>{emptyState}</>;
+  }
 
   const items = media.length ? media : [{ type: "image" as const, url: fallbackUrl }];
   const preview = items.slice(0, 4);

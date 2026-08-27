@@ -29,7 +29,7 @@ export default function Hero({
         </span>
 
         {/* Title */}
-        <h1 className="mt-6 text-4xl md:text-6xl font-black">
+        <h1 className="mt-6 text-3xl sm:text-4xl md:text-6xl font-black">
           Find rooms & services
           <span className="block text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600">
             in one place

@@ -444,19 +444,19 @@ export default function CreateBusinessPage() {
       <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-indigo-300/20 blur-3xl" />
 
       <div className="relative mx-auto max-w-xl">
-        <div className="rounded-3xl border border-white/40 bg-white/70 p-8 shadow-2xl backdrop-blur-xl">
+        <div className="rounded-3xl border border-white/40 bg-white/70 p-5 sm:p-8 shadow-2xl backdrop-blur-xl">
           {/* Header */}
 
           <div className="mb-8 text-center">
 
-            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 shadow-xl">
+            <div className="mx-auto mb-5 flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 shadow-xl">
               <Building2
-                size={30}
+                size={26}
                 className="text-white"
               />
             </div>
 
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
               Create Business
             </h1>
 
