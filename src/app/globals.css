@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --surface-muted: #f1f5f9;
+  --foreground: #0f172a;
+  --foreground-muted: #64748b;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  --accent: #059669;
+  --accent-hover: #047857;
+  --accent-soft: #ecfdf5;
+  --accent-soft-border: #a7f3d0;
+  --accent-foreground: #ffffff;
+
+  --status-good-bg: #ecfdf5;
+  --status-good-border: #a7f3d0;
+  --status-good-text: #047857;
+
+  --status-warning-bg: #fffbeb;
+  --status-warning-border: #fde68a;
+  --status-warning-text: #b45309;
+
+  --status-critical-bg: #fef2f2;
+  --status-critical-border: #fecaca;
+  --status-critical-text: #b91c1c;
+
+  --status-info-bg: #eff6ff;
+  --status-info-border: #bfdbfe;
+  --status-info-text: #1d4ed8;
+
+  --status-neutral-bg: #f1f5f9;
+  --status-neutral-border: #e2e8f0;
+  --status-neutral-text: #64748b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  /* Alias so ported components using the shorter `text-muted` / `bg-muted` utilities keep working. */
+  --color-muted: var(--foreground-muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-foreground: var(--accent-foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b1120;
+    --surface: #111827;
+    --surface-muted: #1a2333;
+    --foreground: #f1f5f9;
+    --foreground-muted: #94a3b8;
+    --border: #253044;
+    --border-strong: #334155;
+
+    --accent: #34d399;
+    --accent-hover: #6ee7b7;
+    --accent-soft: #0f2b22;
+    --accent-soft-border: #16513f;
+    --accent-foreground: #052e21;
+
+    --status-good-bg: #0f2b22;
+    --status-good-border: #16513f;
+    --status-good-text: #6ee7b7;
+
+    --status-warning-bg: #2b2109;
+    --status-warning-border: #7c5a0f;
+    --status-warning-text: #fbbf24;
+
+    --status-critical-bg: #2b1212;
+    --status-critical-border: #7f1d1d;
+    --status-critical-text: #fca5a5;
+
+    --status-info-bg: #0f1f38;
+    --status-info-border: #1e40af;
+    --status-info-text: #93c5fd;
+
+    --status-neutral-bg: #1a2333;
+    --status-neutral-border: #253044;
+    --status-neutral-text: #94a3b8;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  border-color: var(--border);
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--accent-soft-border);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+}

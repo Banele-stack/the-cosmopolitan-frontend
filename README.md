@@ -1,8 +1,14 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Backend
+
+Data comes from [`compliance-pro-api`](../compliance-pro-api) (NestJS + TypeORM + Postgres), not mock
+data. Start it first (`npm run start:dev` there, default `http://localhost:3011`) — see
+`src/lib/api.ts` for the fetch client and `.env.local` for `NEXT_PUBLIC_API_URL`.
+
 ## Getting Started
 
-First, run the development server:
+First, run the backend above, then the development server:
 
 ```bash
 npm run dev
@@ -14,7 +20,7 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3010](http://localhost:3010) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
