@@ -58,11 +58,11 @@ export default function Navbar({ view, onNavigate }: NavbarProps) {
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-3 py-3 sm:gap-3 sm:px-4">
         <Link href="/" className="shrink-0">
           <Image
-            src="/CosmoBusinesses.png"
-            alt="Cosmo"
+            src="/SouthSpotLogo.png"
+            alt="SouthSpot"
             width={110}
             height={44}
-            className="h-9 w-auto rounded-md sm:h-11"
+            className="h-9 w-auto sm:h-11"
           />
         </Link>
 
