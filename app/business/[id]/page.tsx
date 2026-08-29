@@ -259,7 +259,7 @@ if (!business) {
 
           <ShareButton
             title={business.name}
-            text={`Check out ${business.name} on The Cosmopolitan`}
+            text={`Check out ${business.name} on SouthSpot`}
           />
         </div>
 

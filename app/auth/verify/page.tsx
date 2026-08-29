@@ -215,7 +215,7 @@ function VerifyContent() {
 
         <p className="mt-8 text-center text-xs text-gray-500">
           Verification is only required once and helps keep
-          Cosmopolitan safe for everyone.
+          SouthSpot safe for everyone.
         </p>
       </div>
     </main>

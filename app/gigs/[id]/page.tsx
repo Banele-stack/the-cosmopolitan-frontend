@@ -183,7 +183,7 @@ export default function GigPage() {
 
           <ShareButton
             title={gig.title}
-            text={`Check out this piece job on The Cosmopolitan: ${gig.title}`}
+            text={`Check out this piece job on SouthSpot: ${gig.title}`}
           />
         </div>
 

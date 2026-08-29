@@ -14,7 +14,7 @@ import { buttonVariants } from "@/components/ui/button";
 // "support", not for them by name.
 const ADMIN_PHONE = "+27723255319";
 const WHATSAPP_LINK = `https://wa.me/${ADMIN_PHONE.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
-  "Hi, I need help with The Cosmopolitan."
+  "Hi, I need help with SouthSpot."
 )}`;
 
 export default function HelpWidget() {
