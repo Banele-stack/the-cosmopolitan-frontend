@@ -20,7 +20,7 @@ const TIPS = [
   },
   {
     icon: KeyRound,
-    text: "Never share your OTP, PIN, or password with anyone — not even someone claiming to be from SouthSpot.",
+    text: "Never share your OTP, PIN, or password with anyone — not even someone claiming to be from Findza.",
   },
   {
     icon: Flag,
@@ -79,7 +79,7 @@ export default function SafetyTipsModal({ trigger }: SafetyTipsModalProps) {
               Quick tips before you dive in
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              SouthSpot connects real people nearby — most of them are exactly who they say they are. A few habits keep it that way for everyone.
+              Findza connects real people nearby — most of them are exactly who they say they are. A few habits keep it that way for everyone.
             </p>
 
             <ul className="mt-5 space-y-3.5">

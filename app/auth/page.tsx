@@ -28,7 +28,7 @@ export default function AuthPage() {
 
         {/* title (smaller for mobile) */}
         <h1 className="mt-5 text-2xl font-black text-gray-900 leading-tight">
-          Your SouthSpot
+          Your Findza
           <span className="block text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600">
             account
           </span>

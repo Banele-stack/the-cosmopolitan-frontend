@@ -61,7 +61,7 @@ const STEPS: Step[] = [
   {
     target: '[data-tour="add-listing"]',
     title: "List your own",
-    body: "Tap here to add your business, room, or piece job to SouthSpot.",
+    body: "Tap here to add your business, room, or piece job to Findza.",
   },
   {
     target: '[data-tour="ai-suggestions"]',

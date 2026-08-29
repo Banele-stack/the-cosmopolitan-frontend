@@ -179,8 +179,8 @@ export default function DashboardPage() {
         <nav className="mb-8 flex items-center justify-between rounded-2xl border border-white/40 bg-white/70 px-6 py-4 shadow-lg backdrop-blur-xl">
           <div className="flex items-center gap-3">
             <Image
-              src="/SouthSpotIcon.png"
-              alt="SouthSpot"
+              src="/FindzaIcon.png"
+              alt="Findza"
               width={36}
               height={36}
               className="rounded-lg"
