@@ -444,7 +444,7 @@ const response = await fetch(
             </h1>
 
             <p className="mt-2 text-gray-500">
-              Add your property and find the perfect tenant on SouthSpot.
+              Add your property and find the perfect tenant on Findza.
             </p>
           </div>
 
