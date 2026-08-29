@@ -314,7 +314,7 @@ function AdminDashboard() {
             </div>
 
             <h1 className="mt-5 text-2xl font-black text-gray-900">
-              Cosmopolitan Admin
+              SouthSpot Admin
             </h1>
 
             <p className="mt-2 text-sm text-gray-500">
@@ -390,7 +390,7 @@ function AdminDashboard() {
             </div>
             <div>
               <p className="text-sm font-bold leading-tight text-gray-900">
-                Cosmopolitan Admin
+                SouthSpot Admin
               </p>
               <p className="text-xs leading-tight text-gray-400">
                 {adminName}

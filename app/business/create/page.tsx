@@ -462,7 +462,7 @@ export default function CreateBusinessPage() {
 
             <p className="mt-2 text-gray-500">
               Add your business and reach thousands of
-              customers on Cosmopolitan.
+              customers on SouthSpot.
             </p>
           </div>
 

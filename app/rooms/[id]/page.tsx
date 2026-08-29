@@ -276,7 +276,7 @@ export default function RoomPage({
 
           <ShareButton
             title={room.name}
-            text={`Check out this room on The Cosmopolitan: ${room.name}`}
+            text={`Check out this room on SouthSpot: ${room.name}`}
           />
         </div>
 

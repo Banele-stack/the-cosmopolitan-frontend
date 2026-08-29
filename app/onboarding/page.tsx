@@ -56,7 +56,7 @@ export default function OnboardingPage() {
             You're almost ready to start listing on
             <span className="font-semibold text-blue-700">
               {" "}
-              Cosmopolitan
+              SouthSpot
             </span>
             .
           </p>
